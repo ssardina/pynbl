@@ -36,6 +36,10 @@ def get_raw_pbp_fibalivestats(game_id: int):
 
     # keep columns 1 to 17, drop all player info
     pbp_df = pbp_df.iloc[:, 1:17]
+    
+    # set type of time fields
+    # pbp_df['gt'] = pd.to_datetime(pbp_df['gt'], format="%M:%S").dt.time
+    pbp_df['clock'] = pd.to_datetime(pbp_df['clock'], format="%M:%S:%f").dt.time
 
     # change period id of OT
     #TODO: why is this change to a number 5??
