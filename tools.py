@@ -6,8 +6,7 @@ from urllib.request import urlopen
 
 from config import *
 
-
-def get_raw_pbp_fibalivestats(game_id: int):
+def get_json_data(game_id: int) :
     game_file = f"data-{game_id}.json"
     game_url = os.path.join(URL_LIVESTATS, str(game_id), "data.json")
 
@@ -23,11 +22,30 @@ def get_raw_pbp_fibalivestats(game_id: int):
         data_json = json.loads(response.read())
         print(f"Game data loaded from URL: {game_url}")
 
+    return data_json
+
+def get_team_names_json(data_json):
+    name_1 = data_json['tm']['1']['name']
+    name_2 = data_json['tm']['2']['name']
+    short_name_1 = data_json['tm']['1']['shortName']
+    short_name_2 = data_json['tm']['2']['shortName']
+
+    return [(name_1, short_name_1), (name_2, short_name_2)]
+
+# https://pandas.pydata.org/docs/reference/api/pandas.json_normalize.html
+def get_game_players_json(game_json, tm):
+    return pd.json_normalize(game_json['tm'][str(tm)]['pl'].values())
+
+
+
+def get_raw_pbp_fibalivestats(game_id: int):
+    data_json = get_json_data(game_id)
+
     # Extract names of teams in the game
-    team_name_1 = data_json['tm']['1']['name']
-    team_name_2 = data_json['tm']['2']['name']
-    team_short_name_1 = data_json['tm']['1']['shortName']
-    team_short_name_2 = data_json['tm']['2']['shortName']
+    team_names = get_team_names_json(data_json)
+    team_name_1, team_short_name_1 = team_names[0]
+    team_name_2, team_short_name_2 = team_names[1]
+
     print(f"Game {team_name_1} ({team_short_name_1}) vs {team_name_2} ({team_short_name_2})")
 
 
@@ -36,7 +54,7 @@ def get_raw_pbp_fibalivestats(game_id: int):
 
     # keep columns 1 to 17, drop all player info
     pbp_df = pbp_df.iloc[:, 1:17]
-    
+
     # set type of time fields
     # pbp_df['gt'] = pd.to_datetime(pbp_df['gt'], format="%M:%S").dt.time
     pbp_df['clock'] = pd.to_datetime(pbp_df['clock'], format="%M:%S:%f").dt.time
