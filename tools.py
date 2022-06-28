@@ -7,6 +7,15 @@ from urllib.request import urlopen
 
 from config import *
 
+# class Game(object):
+#     def __init__(self, id, file=None) -> None:
+#         self.game_id = id
+#         self.game_file = file
+
+#         self.data_json = self.get_json_data(self.game_id)
+#         self.pbp_df = 
+#         pass
+
 def get_json_data(game_id: int) :
     """Load a game into a JSON object. 
         Data will be loaded from local file data-{game_id}.json if exists
@@ -35,7 +44,7 @@ def get_json_data(game_id: int) :
 
     return data_json
 
-def get_actions(pbp_df: pd.DataFrame) -> pd.DataFrame:
+def pbp_get_actions(pbp_df: pd.DataFrame) -> pd.DataFrame:
     """Given a pbp dataframe, build a table wtih all possible actions and subactions
 
     Args:
@@ -79,20 +88,30 @@ def get_game_players(game_json, tm):
     """
     return pd.json_normalize(game_json['tm'][str(tm)]['pl'].values())
 
-def get_stints(game_json, team_no: set):
+def stints_extract(starter_team: set, pbp_df : pd.DataFrame, team_no: int) -> dict:
+    """Extract stint information for a team
 
-    pbp_df = get_pbp_df(game_json)
+    A sting is a dict:
+        the key is the set of players in the lineup
+        the value is a list of interval tuples (period no, left datetime.time, right datetime.time)
 
-    stints = {}
-    current_team = set.union(*[get_starters(game_json, n) for n in team_no])
+    Args:
+        game_json (json-obj): live JSON data of a game
+        team_no (int): 1 or 2, the team to extract the stints
+
+    Returns:
+        dict: stint information extracted for team_no
+    """
+    stints = {} # here we will collect ther result as a dictionary!
+
+    current_team = starter_team # lineup start
     current_team = frozenset(current_team)
-    print(f"Starter team: {current_team}")
+    # print(f"Starter team: {current_team}")
     for period in range(1, 5):
         prev_clock = datetime.time.fromisoformat('00:10:00.000000')
         prev_clock = datetime.time(hour=0, minute=10, second=0)
-        print(prev_clock)
         subs = pbp_df.loc[(pbp_df['actionType'] == 'substitution') &
-                            (pbp_df['tno'].isin(team_no)) &
+                            (pbp_df['tno'] == team_no) &
                             (pbp_df['period'] == period)]
         for sub_clock in subs['clock'].unique(): # loo on the sub times for the team
             # interval = pd.Interval(datetime.datetime.timestamp(prev_clock), datetime.datetime.timestamp(sub_clock), closed='left')
@@ -117,15 +136,15 @@ def get_stints(game_json, team_no: set):
     return stints
 
 
-def get_pbp_ranges_df(pbp_df: pd.DataFrame, time_intervals: list) -> pd.DataFrame:
-    """Projects the pbp within a set of time intervals (e.g., when a stint played) 
+def pbp_get_ranges_mask(pbp_df: pd.DataFrame, time_intervals: list) -> pd.Series:
+    """Returns a boolean mask for a pbp df to filter time intervals on the clock/period
 
     Args:
         pbp_df (pd.DataFrame): the full play-by-play data
         time_interval (list(int, datetime.time, datetime.time)): list of time intervals
 
     Returns:
-        pd.DataFrame: filtered pbp wrt time intervals given
+        pd.Series: a mask for a pbp df wrt time intervals given
     """
 
     mask = pd.Series([False]*pbp_df.shape[0]) # initial mask: all selected!
@@ -138,7 +157,20 @@ def get_pbp_ranges_df(pbp_df: pd.DataFrame, time_intervals: list) -> pd.DataFram
 
         mask = (mask) | (mask2)
 
-    return pbp_df[mask]
+    return mask
+
+
+def pbp_get_ranges_df(pbp_df: pd.DataFrame, time_intervals: list) -> pd.DataFrame:
+    """Projects the pbp within a set of time intervals (e.g., when a stint played) 
+
+    Args:
+        pbp_df (pd.DataFrame): the full play-by-play data
+        time_interval (list(int, datetime.time, datetime.time)): list of time intervals
+
+    Returns:
+        pd.DataFrame: filtered pbp wrt time intervals given
+    """
+    return pbp_df[pbp_get_ranges_mask(pbp_df, time_intervals)]
 
 # https://pandas.pydata.org/docs/reference/api/pandas.json_normalize.html
 def get_starters(game_json, tm) -> set:
@@ -159,6 +191,33 @@ def get_starters(game_json, tm) -> set:
 
     return starters
 
+def add_stints_cols(pbp_df: pd.DataFrame) -> tuple:
+    stints1 = stints_extract(game_json, set({1}))
+
+
+def add_stint_col(pbp_df: pd.DataFrame, stints: dict, col_name: str) -> tuple:
+    pbp2_df = pbp_df.copy()
+    pbp2_df[col_name] = -1  # integer columns cannot store NaN, so we use -1 (no stint)
+    pbp2_df.astype({col_name: 'int32'})
+
+    # build dataframe with teams and id
+    stints_df = pd.DataFrame({'id': pd.Series(dtype='int'),
+                   'lineup': pd.Series(dtype='object'),
+                   'intervals': pd.Series(dtype='object')
+                   })
+    for lineup in enumerate(stints, start=1):
+        row = {'id' : lineup[0], 'lineup' : lineup[1], 'intervals' : stints[lineup[1]]}
+        stints_df = stints_df.append(row, ignore_index=True)
+
+        # add column with stint id
+        intervals_team = stints[lineup[1]]
+        mask = pbp_get_ranges_mask(pbp_df, intervals_team)
+        pbp2_df.loc[mask, col_name] = lineup[0]
+
+    return stints_df, pbp2_df
+
+
+
 def get_raw_pbp_fibalivestats(game_id: int):
     data_json = get_json_data(game_id)
 
@@ -170,7 +229,7 @@ def get_pbp_df(data_json):
     team_name_1, team_short_name_1 = team_names[0]
     team_name_2, team_short_name_2 = team_names[1]
 
-    print(f"Game {team_name_1} ({team_short_name_1}) vs {team_name_2} ({team_short_name_2})")
+    # print(f"Game {team_name_1} ({team_short_name_1}) vs {team_name_2} ({team_short_name_2})")
 
 
     # extract play-by-play data
