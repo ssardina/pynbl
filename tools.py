@@ -71,9 +71,11 @@ def get_stints(game_json, team_no: set):
     stints = {}
     current_team = set.union(*[get_starters(game_json, n) for n in team_no])
     current_team = frozenset(current_team)
-    # print(f"Starter team: {current_team}")
+    print(f"Starter team: {current_team}")
     for period in range(1, 5):
         prev_clock = datetime.time.fromisoformat('00:10:00.000000')
+        prev_clock = datetime.time(hour=0, minute=10, second=0)
+        print(prev_clock)
         subs = pbp_df.loc[(pbp_df['actionType'] == 'substitution') &
                             (pbp_df['tno'].isin(team_no)) &
                             (pbp_df['period'] == period)]
@@ -90,6 +92,9 @@ def get_stints(game_json, team_no: set):
             players_out = set(subs.loc[(subs['clock'] == sub_clock) &
                                     (subs['subType'] == 'out'), 'player'].tolist())
             current_team = current_team.difference(players_out).union(players_in)
+
+            # reset prev clock for next subs
+            prev_clock = sub_clock
 
             # print(f'Subs at time {sub_clock}: {players_in} for {players_out}')
             # print(f"\t New team: {current_team}")
