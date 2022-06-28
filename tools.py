@@ -16,6 +16,11 @@ from config import *
 #         self.pbp_df = 
 #         pass
 
+
+##########################################################
+# CODE USING JSON DATA
+# ##########################################################
+
 def get_json_data(game_id: int) :
     """Load a game into a JSON object. 
         Data will be loaded from local file data-{game_id}.json if exists
@@ -44,20 +49,6 @@ def get_json_data(game_id: int) :
 
     return data_json
 
-def pbp_get_actions(pbp_df: pd.DataFrame) -> pd.DataFrame:
-    """Given a pbp dataframe, build a table wtih all possible actions and subactions
-
-    Args:
-        pbp_df (pd.DataFrame): play-by-play data
-
-    Returns:
-        pd.DataFrame: a table with all possible actions
-    """
-    actions = pbp_df[['actionType', 'subType']].sort_values('actionType').drop_duplicates()
-
-    actions.set_index('actionType', inplace=True)
-
-    return actions
 
 def get_team_names(data_json):
     """Extra team names from JSON game
@@ -88,7 +79,90 @@ def get_game_players(game_json, tm):
     """
     return pd.json_normalize(game_json['tm'][str(tm)]['pl'].values())
 
-def stints_extract(starter_team: set, pbp_df : pd.DataFrame, team_no: int) -> dict:
+
+def get_raw_pbp_fibalivestats(game_id: int):
+    data_json = get_json_data(game_id)
+
+    return get_pbp_df(data_json)
+
+def get_pbp_df(data_json):
+    # Extract names of teams in the game
+    team_names = get_team_names(data_json)
+    team_name_1, team_short_name_1 = team_names[0]
+    team_name_2, team_short_name_2 = team_names[1]
+
+    # print(f"Game {team_name_1} ({team_short_name_1}) vs {team_name_2} ({team_short_name_2})")
+
+
+    # extract play-by-play data
+    pbp_df = pd.json_normalize(data_json, record_path =['pbp'])
+
+    # keep columns 1 to 17, drop all player info
+    pbp_df = pbp_df.iloc[:, 1:17]
+
+    # set type of time fields
+    # pbp_df['gt'] = pd.to_datetime(pbp_df['gt'], format="%M:%S").dt.time
+    pbp_df['clock'] = pd.to_datetime(pbp_df['clock'], format="%M:%S:%f").dt.time
+
+    # change period id of OT
+    #TODO: why is this change to a number 5??
+    #periodType == 'OVERTIME'] = 5
+    pbp_df.loc[pbp_df["periodType"] == 'OVERTIME', 'periodType'] = 5
+
+    # #add teams names
+
+    # pbp$team_name = ''
+    # pbp$team_short_name = ''
+    pbp_df.insert(0, 'team_name', '')
+    pbp_df.insert(1, 'team_short_name', '')
+    pbp_df.loc[pbp_df['tno'] == 1, 'team_name'] = team_name_1
+    pbp_df.loc[pbp_df['tno'] == 2, 'team_name'] = team_name_2
+    pbp_df.loc[pbp_df['tno'] == 1, 'team_short_name'] = team_short_name_1
+    pbp_df.loc[pbp_df['tno'] == 2, 'team_short_name'] = team_short_name_2
+
+    #TODO: Do we really need to remove numbers from players names?
+    # pbp_df.loc[pbp_df['player'].str.contains('\d') | pbp_df['player'].str.contains(',')]
+    #
+    # old R code:
+    # #remove numbers from players names
+    # pbp$player = gsub('[0-9]', '', pbp$player)
+    # pbp$player = gsub(', ','', pbp$player)
+
+    # sort by period and clock
+    pbp_df.sort_values(by=['period', 'clock'], ascending=[True, False], inplace=True)
+
+    #TODO: do we need these new columns?
+    # pbp$firstName = NULL
+    # pbp$shirtNumber = NULL
+
+    return pbp_df
+
+
+
+
+##########################################################
+# CODE USING P-B-P DATAFRAME
+# ##########################################################
+
+
+def pbp_get_actions(pbp_df: pd.DataFrame) -> pd.DataFrame:
+    """Given a pbp dataframe, build a table wtih all possible actions and subactions
+
+    Args:
+        pbp_df (pd.DataFrame): play-by-play data
+
+    Returns:
+        pd.DataFrame: a table with all possible actions
+    """
+    actions = pbp_df[['actionType', 'subType']].sort_values('actionType').drop_duplicates()
+
+    actions.set_index('actionType', inplace=True)
+
+    return actions
+
+
+
+def pbp_stints_extract(pbp_df : pd.DataFrame, starter_team: set, team_no: int) -> dict:
     """Extract stint information for a team
 
     A sting is a dict:
@@ -216,61 +290,3 @@ def add_stint_col(pbp_df: pd.DataFrame, stints: dict, col_name: str) -> tuple:
 
     return stints_df, pbp2_df
 
-
-
-def get_raw_pbp_fibalivestats(game_id: int):
-    data_json = get_json_data(game_id)
-
-    return get_pbp_df(data_json)
-
-def get_pbp_df(data_json):
-    # Extract names of teams in the game
-    team_names = get_team_names(data_json)
-    team_name_1, team_short_name_1 = team_names[0]
-    team_name_2, team_short_name_2 = team_names[1]
-
-    # print(f"Game {team_name_1} ({team_short_name_1}) vs {team_name_2} ({team_short_name_2})")
-
-
-    # extract play-by-play data
-    pbp_df = pd.json_normalize(data_json, record_path =['pbp'])
-
-    # keep columns 1 to 17, drop all player info
-    pbp_df = pbp_df.iloc[:, 1:17]
-
-    # set type of time fields
-    # pbp_df['gt'] = pd.to_datetime(pbp_df['gt'], format="%M:%S").dt.time
-    pbp_df['clock'] = pd.to_datetime(pbp_df['clock'], format="%M:%S:%f").dt.time
-
-    # change period id of OT
-    #TODO: why is this change to a number 5??
-    #periodType == 'OVERTIME'] = 5
-    pbp_df.loc[pbp_df["periodType"] == 'OVERTIME', 'periodType'] = 5
-
-    # #add teams names
-
-    # pbp$team_name = ''
-    # pbp$team_short_name = ''
-    pbp_df.insert(0, 'team_name', '')
-    pbp_df.insert(1, 'team_short_name', '')
-    pbp_df.loc[pbp_df['tno'] == 1, 'team_name'] = team_name_1
-    pbp_df.loc[pbp_df['tno'] == 2, 'team_name'] = team_name_2
-    pbp_df.loc[pbp_df['tno'] == 1, 'team_short_name'] = team_short_name_1
-    pbp_df.loc[pbp_df['tno'] == 2, 'team_short_name'] = team_short_name_2
-
-    #TODO: Do we really need to remove numbers from players names?
-    # pbp_df.loc[pbp_df['player'].str.contains('\d') | pbp_df['player'].str.contains(',')]
-    #
-    # old R code:
-    # #remove numbers from players names
-    # pbp$player = gsub('[0-9]', '', pbp$player)
-    # pbp$player = gsub(', ','', pbp$player)
-
-    # sort by period and clock
-    pbp_df.sort_values(by=['period', 'clock'], ascending=[True, False], inplace=True)
-
-    #TODO: do we need these new columns?
-    # pbp$firstName = NULL
-    # pbp$shirtNumber = NULL
-
-    return pbp_df
