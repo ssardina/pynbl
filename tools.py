@@ -184,10 +184,11 @@ def pbp_stints_extract(pbp_df : pd.DataFrame, starter_team: set, team_no: int) -
     for period in range(1, 5):
         prev_clock = datetime.time.fromisoformat('00:10:00.000000')
         prev_clock = datetime.time(hour=0, minute=10, second=0)
+        end_clock = datetime.time(hour=0, minute=0, second=0)
         subs = pbp_df.loc[(pbp_df['actionType'] == 'substitution') &
                             (pbp_df['tno'] == team_no) &
                             (pbp_df['period'] == period)]
-        for sub_clock in subs['clock'].unique(): # loo on the sub times for the team
+        for sub_clock in list(subs['clock'].unique()) + [end_clock]: # loo on the sub times for the team
             # interval = pd.Interval(datetime.datetime.timestamp(prev_clock), datetime.datetime.timestamp(sub_clock), closed='left')
             interval = (period, prev_clock, sub_clock)
             if current_team in stints:
@@ -206,6 +207,7 @@ def pbp_stints_extract(pbp_df : pd.DataFrame, starter_team: set, team_no: int) -
 
             # print(f'Subs at time {sub_clock}: {players_in} for {players_out}')
             # print(f"\t New team: {current_team}")
+        
 
     return stints
 
@@ -265,11 +267,9 @@ def get_starters(game_json, tm) -> set:
 
     return starters
 
-def add_stints_cols(pbp_df: pd.DataFrame) -> tuple:
-    stints1 = stints_extract(game_json, set({1}))
 
 
-def add_stint_col(pbp_df: pd.DataFrame, stints: dict, col_name: str) -> tuple:
+def pbp_add_stint_col(pbp_df: pd.DataFrame, stints: dict, col_name: str) -> tuple:
     pbp2_df = pbp_df.copy()
     pbp2_df[col_name] = -1  # integer columns cannot store NaN, so we use -1 (no stint)
     pbp2_df.astype({col_name: 'int32'})
