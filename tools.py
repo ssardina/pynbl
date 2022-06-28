@@ -35,6 +35,21 @@ def get_json_data(game_id: int) :
 
     return data_json
 
+def get_actions(pbp_df: pd.DataFrame) -> pd.DataFrame:
+    """Given a pbp dataframe, build a table wtih all possible actions and subactions
+
+    Args:
+        pbp_df (pd.DataFrame): play-by-play data
+
+    Returns:
+        pd.DataFrame: a table with all possible actions
+    """
+    actions = pbp_df[['actionType', 'subType']].sort_values('actionType').drop_duplicates()
+
+    actions.set_index('actionType', inplace=True)
+
+    return actions
+
 def get_team_names(data_json):
     """Extra team names from JSON game
 
@@ -101,6 +116,29 @@ def get_stints(game_json, team_no: set):
 
     return stints
 
+
+def get_pbp_ranges_df(pbp_df: pd.DataFrame, time_intervals: list) -> pd.DataFrame:
+    """Projects the pbp within a set of time intervals (e.g., when a stint played) 
+
+    Args:
+        pbp_df (pd.DataFrame): the full play-by-play data
+        time_interval (list(int, datetime.time, datetime.time)): list of time intervals
+
+    Returns:
+        pd.DataFrame: filtered pbp wrt time intervals given
+    """
+
+    mask = pd.Series([False]*pbp_df.shape[0]) # initial mask: all selected!
+    for interval in time_intervals:
+        period, end, start = interval
+        # print(f"Period {period} between {start} and {end}")
+
+        mask2 = (pbp_df['period'] == period)
+        mask2 = mask2 & (pbp_df['clock'] > start) & (pbp_df['clock'] <= end)
+
+        mask = (mask) | (mask2)
+
+    return pbp_df[mask]
 
 # https://pandas.pydata.org/docs/reference/api/pandas.json_normalize.html
 def get_starters(game_json, tm) -> set:
