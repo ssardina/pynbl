@@ -37,7 +37,7 @@ def get_json_data(game_id: int) :
 
     if os.path.exists(game_file):
         data_json = json.load(open(f'data-{game_id}.json'))
-        print(f"Game data loaded from local file: {game_file}")
+        # print(f"Game data loaded from local file: {game_file}")
     else:   # get if from URL
         # store the response of URL
         response = urlopen(game_url)
@@ -45,7 +45,7 @@ def get_json_data(game_id: int) :
         # storing the JSON response 
         # from url in data
         data_json = json.loads(response.read())
-        print(f"Game data loaded from URL: {game_url}")
+        # print(f"Game data loaded from URL: {game_url}")
 
     return data_json
 
