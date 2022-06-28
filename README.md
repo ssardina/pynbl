@@ -35,7 +35,7 @@ https://public.tableau.com/app/profile/john5460/viz/NBL2021-22/CompareOnOff?publ
 
 where:
 
-- `MM:SS:CC`, where `CC` is hundredths of a second.
+- `MM:SS:CC`, where `CC` is hundredths of a second. When a period starts, lock is "`10:00:00`" (10 min left).
 
 ### Other information on format
 
