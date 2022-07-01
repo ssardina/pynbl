@@ -1,8 +1,8 @@
 # Basketball Statistics
 
-## Data
+## Game data
 
-The data is provided live by [Genius Sports ](https://developer.geniussports.com/).
+The game data is provided live by [Genius Sports ](https://developer.geniussports.com/).
 
 The documentation for the Basketball feed can be found [here](https://developer.geniussports.com/livestats/tvfeed/index_basketball.html).
 
@@ -11,6 +11,8 @@ Messages are sent in JSON structures and use UTF-8 format.
 An example of a raw JSON file:
 
 https://fibalivestats.dcd.shared.geniussports.com/data/2087737/data.json
+
+The game ID (`2087737` in this case) can be obtained from the URL of NBL, for example: https://nbl.com.au/games/2087737
 
 However that JSON files does not seem to match the above doc... :-)
 
