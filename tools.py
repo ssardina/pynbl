@@ -288,5 +288,45 @@ def pbp_add_stint_col(pbp_df: pd.DataFrame, stints: dict, col_name: str) -> tupl
         mask = pbp_get_ranges_mask(pbp_df, intervals_team)
         pbp2_df.loc[mask, col_name] = lineup[0]
 
+    stints_df['mins'] = stints_df['intervals'].apply(intervals_to_mins)
+
     return stints_df, pbp2_df
 
+
+
+
+
+
+#########################################################
+# AUX TOOLS
+#########################################################
+
+# stats_df.merge(stints1_df)s
+def time_to_datetime(time : datetime.time) -> datetime.datetime:
+    """Convert datetime.time to datetime.datetime
+
+    Args:
+        time (datetime.time): time to convert
+
+    Returns:
+        datetime.datetime: converted object
+    """
+    try:
+        return pd.to_datetime(time, format='%H:%M:%S.%f')
+    except:
+        return pd.to_datetime(time, format='%H:%M:%S')
+
+def intervals_to_mins(intervals: list) -> float:
+    """Convert a list of game intervals into number of minutes played
+
+    Args:
+        intervals (list): list of intervals (period, time end, time start)
+
+    Returns:
+        float: number of minutes in the intervals
+    """
+    minutes = 0
+    for i in intervals:
+        minutes += (time_to_datetime(i[1]) - time_to_datetime(i[2])).seconds /  60
+
+    return minutes
