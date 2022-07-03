@@ -107,3 +107,7 @@ tmp
 bball_stas.ipynb
 data/games_df.pkl
 data/stats_df.pkl
+data/games_df.csv
+data/games_df.xlsx
+data/stats_df.csv
+data/stats_df.xlsx
