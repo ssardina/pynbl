@@ -484,7 +484,9 @@ def build_game_stints_stats_df(game_id : int) -> pd.DataFrame:
 
     # 8. Add stint info to stat df
     stints1_df['tno'] = 1
+    stints1_df['team'] = team_name_1
     stints2_df['tno'] = 2
+    stints2_df['team'] = team_name_2
     stints_df = pd.concat([stints1_df, stints2_df])
     stats_df = stats_df.merge(stints_df, left_on=['tno', 'stint'], right_on=['tno', 'id'])
 
