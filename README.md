@@ -1,8 +1,11 @@
 # Pynblstats: Python AUS Bball Statistic System
 
-These scripts will collect the data (as JSON data) from one more more games from [fibalivestats](http://www.fibaorganizer.com/) and produce a [Panda](https://pandas.pydata.org/) Dataframe with stats for each teams' stint (e.g., lineup of players who played together in different intervals during the game).
+These scripts will collect the data (as JSON data) from one more more games from [fibalivestats](http://www.fibaorganizer.com/) and produce:
 
-The script can also provide:
+- a [Panda](https://pandas.pydata.org/) Dataframe with stats for each teams' stint (e.g., lineup of players who played together in different intervals during the game).
+- a [Panda](https://pandas.pydata.org/) Dataframe  with games' information (e.g., team names, scores).
+
+The system can also provide:
 
 - A **table of stints** for each team containing the lineup of players of each stint, the intervals and the number of minutes the stint was on court.
 - A **play-by-play** DataFrame, with and without the stint id on each play for each team (denoting which lineups where on court at a play).
