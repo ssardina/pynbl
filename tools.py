@@ -1,8 +1,8 @@
 import os
 import datetime
-import json
-import pandas as pd
 from urllib.request import urlopen
+import json  # https://docs.python.org/3/library/json.html
+import pandas as pd
 from functools import reduce
 
 from config import *
@@ -40,7 +40,7 @@ def intervals_to_mins(intervals: list) -> float:
     return minutes
 
 
-def get_json_data(game_id: int) :
+def get_json_data(game_id: int, reload=False) :
     """Load a game into a JSON object. 
         Data will be loaded from local file data-{game_id}.json if exists
         Otherwise will be fetched from server
@@ -54,7 +54,7 @@ def get_json_data(game_id: int) :
     game_file = os.path.join(DATA_DIR, f"data-{game_id}.json")
     game_url = os.path.join(URL_LIVESTATS, str(game_id), "data.json")
 
-    if os.path.exists(game_file):
+    if not reload and os.path.exists(game_file):
         data_json = json.load(open(game_file))
         # print(f"Game data loaded from local file: {game_file}")
     else:   # get if from URL
@@ -64,6 +64,8 @@ def get_json_data(game_id: int) :
         # storing the JSON response 
         # from url in data
         data_json = json.loads(response.read())
+        with open(os.path.join(DATA_DIR, f'data-{game_id}.json'), 'w') as f:
+            json.dump(data_json, f)
         # print(f"Game data loaded from URL: {game_url}")
 
     return data_json

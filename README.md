@@ -1,5 +1,21 @@
 # Pynblstats: Python AUS Bball Statistic System
 
+These scripts will collect the data (as JSON data) from one more more games from [fibalivestats](http://www.fibaorganizer.com/) and produce a [Panda](https://pandas.pydata.org/) Dataframe with stats for each teams' stint (e.g., lineup of players who played together in different intervals during the game).
+
+The script can also provide:
+
+- A **table of stints** for each team containing the lineup of players of each stint, the intervals and the number of minutes the stint was on court.
+- A **play-by-play** DataFrame, with and without the stint id on each play for each team (denoting which lineups where on court at a play).
+- The **starting lineup** of a team.
+
+## Pre-requisites
+
+The script runs on Python and requires `panda`:
+
+```shell
+$ pip install pandas
+```
+
 ## JSON game data via Fibalivestats
 
 Game data is provided by link:
@@ -30,8 +46,9 @@ where:
 ### APIs
 
 - [NBL Game Fixture](https://nbl.com.au/fixture).
-- [Genius Sports Developmer Centre](https://developer.geniussports.com/).
-  - [Genius API - Overview and Documentation](https://support.geniussports.com/en/support/solutions/articles/9000008009-api-feed-overview-and-documentation).
+- [FIBA LiveStats V7](http://www.fibaorganizer.com/): a notebook-based software application to record basketball game statistics and webcast games in real time.
+  - [Genius Sports Developer Centre](https://developer.geniussports.com/).
+    - [Genius API - Overview and Documentation](https://support.geniussports.com/en/support/solutions/articles/9000008009-api-feed-overview-and-documentation).
   - [REST API Documentation](https://developer.geniussports.com/warehouse/rest/index_basketball.html).
   - Get all matches (but requires key!): https://api.wh.geniussports.com/v1/basketball/stream/matches
 - [Best API](https://betsapi.com/l/1714/Australia-NBL): paid RESTful API.

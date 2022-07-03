@@ -14,12 +14,9 @@
 
 # %%
 # Let's first load all required packages...
-import json  # https://docs.python.org/3/library/json.html
-import os
 import pandas as pd
 import numpy as np
 import datetime
-import re
 
 # Load constants
 from config import *
@@ -34,10 +31,6 @@ game_id = 2087737
 ##########################################################
 # CODE USING JSON DATA
 # ##########################################################
-
-
-
-
 def get_team_names(data_json):
     """Extra team names from JSON game
 
@@ -53,6 +46,21 @@ def get_team_names(data_json):
     short_name_2 = data_json['tm']['2']['shortName']
 
     return [(name_1, short_name_1), (name_2, short_name_2)]
+
+def get_team_scores(data_json):
+    """Extra team names from JSON game
+
+    Args:
+        data_json (json-object): JSON live data of a game
+
+    Returns:
+        tuple(int, int): scores for team 1 and 2
+    """
+    score_1 = data_json['tm']['1']['full_score']
+    score_2 = data_json['tm']['2']['full_score']
+
+    return (score_1, score_2)
+
 
 # https://pandas.pydata.org/docs/reference/api/pandas.json_normalize.html
 def get_game_players(game_json, tm):
@@ -140,7 +148,7 @@ def get_pbp_df(data_json):
     return pbp_df
 
 
-##########################################################
+# ##########################################################
 # CODE USING P-B-P DATAFRAME
 # ##########################################################
 
@@ -274,9 +282,9 @@ def pbp_add_stint_col(pbp_df: pd.DataFrame, stints: dict, col_name: str) -> tupl
 
 
 
-#####################################################################################
+# ##########################################################
 # STINT STATISTICS BUILDER
-#####################################################################################
+# ##########################################################
 def build_team_stint_stats_df(pbp_df: pd.DataFrame, tno: int, stint_col: str) -> pd.DataFrame:
     """Build a dataframe with full statistics for a team
 
@@ -447,10 +455,12 @@ def build_game_stints_stats_df(game_id : int) -> pd.DataFrame:
     game_json = tools.get_json_data(game_id)
     pbp_df = get_pbp_df(game_json)
 
-    # 2. Extract names of teams in the game
+    # 2. Extract names of teams in the game and scores
     team_names = get_team_names(game_json)
     team_name_1, team_short_name_1 = team_names[0]
     team_name_2, team_short_name_2 = team_names[1]
+
+    score_1, score_2 = get_team_scores(game_json)
 
     print(f"====> Game {team_name_1} ({team_short_name_1}) vs {team_name_2} ({team_short_name_2})")
     print(f"Play-by-play df for game {game_id}: {pbp_df.shape}")
@@ -488,9 +498,17 @@ def build_game_stints_stats_df(game_id : int) -> pd.DataFrame:
     stints2_df['tno'] = 2
     stints2_df['team'] = team_name_2
     stints_df = pd.concat([stints1_df, stints2_df])
+    stats_df.reset_index(inplace=True, drop=True)
+
+    # 9. Merge stats table with stint table
     stats_df = stats_df.merge(stints_df, left_on=['tno', 'stint'], right_on=['tno', 'id'])
+    stats_df.drop('id', axis=1, inplace=True) # we don't need it, already in stint col
+    team_name_col = stats_df.pop('team')
+    stats_df.insert(1, "team", team_name_col)
 
-    return stats_df
+    return stats_df, (team_name_1, score_1), (team_name_2, score_2)
 
 
 
+
+# %%

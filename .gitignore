@@ -104,3 +104,6 @@ venv.bak/
 .mypy_cache/
 test.ipynb
 tmp
+bball_stas.ipynb
+data/games_df.pkl
+data/stats_df.pkl
