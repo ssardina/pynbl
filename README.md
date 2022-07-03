@@ -25,9 +25,11 @@ For the doing plots and charts:
 $ pip install matplotlib seaborn 
 ```
 
+The system has been developed with [VS Code](https://code.visualstudio.com/docs/datascience/jupyter-notebooks) and its [Jupyter extension](https://pypi.org/project/jupyter/).
+
 ## How to use it
 
-The basic system is in Jupyter notebook [bball_stats.ipynb](bball_stats.ipynb).
+The basic system is in Jupyter notebook [bball_stats.ipynb](bball_stats.ipynb). This can be opened and used via the browser (with a proper Juypter server running) or better via [VS Code](https://code.visualstudio.com/docs/datascience/jupyter-notebooks).
 
 The data computed are:
 
