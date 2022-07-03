@@ -140,8 +140,6 @@ def get_pbp_df(data_json):
     return pbp_df
 
 
-
-
 ##########################################################
 # CODE USING P-B-P DATAFRAME
 # ##########################################################
@@ -302,27 +300,27 @@ def build_team_stint_stats_df(pbp_df: pd.DataFrame, tno: int, stint_col: str) ->
         """
 
         # tuples (name, default value, True if attemps/made/per, mask)
-        stats = [ ('ast', 0, False, pbp_df['actionType'] == 'assist'),
+        stats = [ (F_AST, 0, False, pbp_df['actionType'] == 'assist'),
                 # points
-                ('2pt_fg', 0, True, pbp_df['actionType'] == '2pt'),
-                ('patr', 0, True, pbp_df['subType'].isin(['layup', 'drivinglayup', 'dunk'])),
-                ('3pt_fg', 0, True, pbp_df['actionType'] == '3pt'),
-                ('ft', 0, True, pbp_df['actionType'] == 'freethrow'),
+                (F_2PTFG, 0, True, pbp_df['actionType'] == '2pt'),
+                (F_PATR, 0, True, pbp_df['subType'].isin(['layup', 'drivinglayup', 'dunk'])),
+                (F_3PTFG, 0, True, pbp_df['actionType'] == '3pt'),
+                (F_FT, 0, True, pbp_df['actionType'] == 'freethrow'),
                 # others
-                ('reb', 0, False, pbp_df['actionType'] == 'rebound'),
-                ('oreb', 0, False, (pbp_df['actionType'] == 'rebound') & (pbp_df['subType'] == 'offensive')),
-                ('dreb', 0, False, (pbp_df['actionType'] == 'rebound') & (pbp_df['subType'] == 'defensive')),
-                ('stl', 0, False, pbp_df['actionType'] == 'steal'),
-                ('blk', 0, False, pbp_df['actionType'] == 'block'),
+                (F_REB, 0, False, pbp_df['actionType'] == 'rebound'),
+                (F_OREB, 0, False, (pbp_df['actionType'] == 'rebound') & (pbp_df['subType'] == 'offensive')),
+                (F_DREB, 0, False, (pbp_df['actionType'] == 'rebound') & (pbp_df['subType'] == 'defensive')),
+                (F_STL, 0, False, pbp_df['actionType'] == 'steal'),
+                (F_BLK, 0, False, pbp_df['actionType'] == 'block'),
                 #turnover types
-                ('tov', 0, False, pbp_df['actionType'] == 'turnover'),
-                ('ballhand', 0, False, (pbp_df['actionType'] == 'turnover') &
+                (F_TOV, 0, False, pbp_df['actionType'] == 'turnover'),
+                (F_BALLHAND, 0, False, (pbp_df['actionType'] == 'turnover') &
                                         (pbp_df['subType'].isin(['ballhandling', 'doubledribble', 'travel'])) ),
-                ('badpass', 0, False, (pbp_df['actionType'] == 'turnover') & (pbp_df['subType'] == 'badpass') ),
-                ('ofoul', 0, False, (pbp_df['actionType'] == 'turnover') & (pbp_df['subType'] == 'offensive') ),
-                ('3sec', 0, False, (pbp_df['actionType'] == 'turnover') & (pbp_df['subType'] == '3sec') ),
-                ('8sec', 0, False, (pbp_df['actionType'] == 'turnover') & (pbp_df['subType'] == '8sec') ),
-                ('24sec', 0, False, (pbp_df['actionType'] == 'turnover') & (pbp_df['subType'] == '24sec') )
+                (F_BADPASS, 0, False, (pbp_df['actionType'] == 'turnover') & (pbp_df['subType'] == 'badpass') ),
+                (F_OFOUL, 0, False, (pbp_df['actionType'] == 'turnover') & (pbp_df['subType'] == 'offensive') ),
+                (F_3SEC, 0, False, (pbp_df['actionType'] == 'turnover') & (pbp_df['subType'] == '3sec') ),
+                (F_8SEC, 0, False, (pbp_df['actionType'] == 'turnover') & (pbp_df['subType'] == '8sec') ),
+                (F_24SEC, 0, False, (pbp_df['actionType'] == 'turnover') & (pbp_df['subType'] == '24sec') )
         ]
         stats_dfs = [pd.DataFrame({col_name : pbp_df[col_name].unique()})] # dummy df for left join
         # compute a dataframe (and add it to stats_dfs) for each stat
@@ -355,29 +353,29 @@ def build_team_stint_stats_df(pbp_df: pd.DataFrame, tno: int, stint_col: str) ->
         # Now, calculate complex stats from prev columns using the merged df
         # --------------------------------------------------
         # calculate shooting stats
-        df['pts'] = 2*df['2pt_fgm'] + 3*df['3pt_fgm'] + df['ftm']
-        df['fga'] = df['2pt_fga'] + df['3pt_fga']
-        df['fgm'] = df['2pt_fgm'] + df['3pt_fgm']
-        df['fgp'] = tools.percent(df['fgm'], df['fga'])
+        df[F_PTS] = 2*df[F_2PTFGM] + 3*df[F_3PTFGM] + df[F_FTM]
+        df[F_FGA] = df[F_2PTFGA] + df[F_3PTFGA]
+        df[F_FGM] = df[F_2PTFGM] + df[F_3PTFGM]
+        df[F_FGP] = tools.percent(df[F_FGM], df[F_FGA])
 
         # # calculate home possessions (possessions only count change of hands, not offensive rebounds and new shots)
-        df['poss'] = df['2pt_fga'] + df['3pt_fga'] + 0.44*df['fta'] + df['tov'] - df['oreb']
-        df.loc[df['poss'] < 0, 'poss'] = 0
+        df[F_POSS] = df[F_2PTFGA] + df[F_3PTFGA] + 0.44*df[F_FTA] + df[F_TOV] - df[F_OREB]
+        df.loc[df[F_POSS] < 0, 'poss'] = 0
 
         # calculate ortg
-        df['ortg'] = tools.percent(df['pts'], df['poss'])
+        df[F_ORTG] = tools.percent(df[F_PTS], df[F_POSS])
 
         # playmaking stats
-        df['fgm_astp'] = tools.percent(df['ast'], df['2pt_fgm'] + df['3pt_fgm'])
+        df[F_FGMASTP] = tools.percent(df[F_AST], df[F_2PTFGM] + df[F_3PTFGM])
 
         # total rebounds
-        df['trb'] = df['dreb'] + df['oreb']
+        df[F_TRB] = df[F_DREB] + df[F_OREB]
 
         #calculate rates
-        df['blk_rate'] = tools.percent(df['blk'], df['poss'])
-        df['stl_rate'] = tools.percent(df['stl'], df['poss'])
-        df['ast_rate'] = tools.percent(df['ast'], df['poss'])
-        df['tov_rate'] = tools.percent(df['tov'], df['poss'])
+        df[F_BLKR] = tools.percent(df[F_BLK], df[F_POSS])
+        df[F_STLR] = tools.percent(df[F_STL], df[F_POSS])
+        df[F_ASTR] = tools.percent(df[F_AST], df[F_POSS])
+        df[F_TOVR] = tools.percent(df[F_TOV], df[F_POSS])
 
         # `team_ts%` = round(100*(sum(lineup_dat$team_pts)/(2*(team_fga + 0.44*sum(lineup_dat$team_fta)))),2)
 
@@ -407,30 +405,30 @@ def build_team_stint_stats_df(pbp_df: pd.DataFrame, tno: int, stint_col: str) ->
 
     # 4. calculate stats that need both team and opp stats
     # for the team
-    stint_stats_df['drtg'] = tools.percent(stint_stats_df['pts_opp'], stint_stats_df['poss_opp']) # drtg = defensive rating
-    stint_stats_df['net_rtg'] = stint_stats_df['ortg'] - stint_stats_df['drtg']
+    stint_stats_df[F_DRTG] = tools.percent(stint_stats_df[f'{F_PTS}_opp'], stint_stats_df[f'{F_POSS}_opp']) # drtg = defensive rating
+    stint_stats_df[F_NRTG] = stint_stats_df[F_ORTG] - stint_stats_df[F_DRTG]
 
-    stint_stats_df['drbp'] = tools.percent(stint_stats_df['dreb'], stint_stats_df['dreb'] + stint_stats_df['oreb_opp'])
-    stint_stats_df['orbp'] = tools.percent(stint_stats_df['oreb'], stint_stats_df['oreb'] + stint_stats_df['dreb_opp'])
-    stint_stats_df['trbp'] = tools.percent(stint_stats_df['trb'],
-                                    stint_stats_df['oreb'] +
-                                    stint_stats_df['dreb'] +
-                                    stint_stats_df['oreb_opp'] +
-                                    stint_stats_df['dreb_opp'])
-    stint_stats_df['opp_fga_blocked'] = tools.percent(stint_stats_df['blk'], stint_stats_df['fga_opp'])
+    stint_stats_df[F_DREBP] = tools.percent(stint_stats_df[F_DREB], stint_stats_df[F_DREB] + stint_stats_df[f'{F_OREB}_opp'])
+    stint_stats_df[F_OREBP] = tools.percent(stint_stats_df[F_OREB], stint_stats_df[F_OREB] + stint_stats_df[f'{F_DREB}_opp'])
+    stint_stats_df[F_TRBR] = tools.percent(stint_stats_df[F_TRB],
+                                    stint_stats_df[F_OREB] +
+                                    stint_stats_df[F_DREB] +
+                                    stint_stats_df[f'{F_OREB}_opp'] +
+                                    stint_stats_df[f'{F_DREB}_opp'])
+    stint_stats_df[F_OPPFGABLK] = tools.percent(stint_stats_df[F_BLK], stint_stats_df[f'{F_FGA}_opp'])
 
     # # for the opponent (same stats as team)
-    stint_stats_df['drtg_opp'] = tools.percent(stint_stats_df['pts'], stint_stats_df['poss'])
-    stint_stats_df['net_rtg_opp'] = stint_stats_df['ortg_opp'] - stint_stats_df['drtg_opp']
+    stint_stats_df[f'{F_DRTG}_opp'] = tools.percent(stint_stats_df[F_PTS], stint_stats_df[F_POSS])
+    stint_stats_df[f'{F_NRTG}_opp'] = stint_stats_df[f'{F_ORTG}_opp'] - stint_stats_df[f'{F_DRTG}_opp']
 
-    stint_stats_df['drbp_opp'] = tools.percent(stint_stats_df['dreb_opp'], stint_stats_df['dreb_opp'] + stint_stats_df['oreb'])
-    stint_stats_df['orbp_opp'] = tools.percent(stint_stats_df['oreb_opp'], stint_stats_df['oreb_opp'] + stint_stats_df['dreb'])
-    stint_stats_df['trbp_opp'] = tools.percent(stint_stats_df['trb_opp'],
-                                    stint_stats_df['oreb_opp'] +
-                                    stint_stats_df['dreb_opp'] +
-                                    stint_stats_df['oreb'] +
-                                    stint_stats_df['dreb'])
-    stint_stats_df['opp_fga_blocked_opp'] = tools.percent(stint_stats_df['blk_opp'], stint_stats_df['fga'])
+    stint_stats_df[f'{F_DREBP}_opp'] = tools.percent(stint_stats_df[f'{F_DREB}_opp'], stint_stats_df[f'{F_DREB}_opp'] + stint_stats_df[F_OREB])
+    stint_stats_df[f'{F_OREBP}_opp'] = tools.percent(stint_stats_df[f'{F_OREB}_opp'], stint_stats_df[f'{F_OREB}_opp'] + stint_stats_df[F_DREB])
+    stint_stats_df[f'{F_TRBR}_opp'] = tools.percent(stint_stats_df[f'{F_TRB}_opp'],
+                                    stint_stats_df[f'{F_OREB}_opp'] +
+                                    stint_stats_df[f'{F_DREB}_opp'] +
+                                    stint_stats_df[F_OREB] +
+                                    stint_stats_df[F_DREB])
+    stint_stats_df[f'{F_OPPFGABLK}_opp'] = tools.percent(stint_stats_df[f'{F_BLK}_opp'], stint_stats_df[F_FGA])
 
 
     return stint_stats_df
@@ -454,15 +452,14 @@ def build_game_stints_stats_df(game_id : int) -> pd.DataFrame:
     team_name_1, team_short_name_1 = team_names[0]
     team_name_2, team_short_name_2 = team_names[1]
 
-    print(f"Game {team_name_1} ({team_short_name_1}) vs {team_name_2} ({team_short_name_2})")
+    print(f"====> Game {team_name_1} ({team_short_name_1}) vs {team_name_2} ({team_short_name_2})")
     print(f"Play-by-play df for game {game_id}: {pbp_df.shape}")
 
     # 3. Compute stints for each team
     starters_1 = get_starters(game_json, 1)
     starters_2 = get_starters(game_json, 2)
     for x in zip([team_name_1, team_name_2], [starters_1, starters_2]):
-        print(f"Starters for {x[0]}:")
-        print(f"\t {x[1]}")
+        print(f"Starters for {x[0]}: {x[1]}")
 
     stints_1 = pbp_stints_extract(pbp_df, starters_1, 1)
     stints_2 = pbp_stints_extract(pbp_df, starters_2, 2)
@@ -483,24 +480,7 @@ def build_game_stints_stats_df(game_id : int) -> pd.DataFrame:
 
     # 7. Reorder columns
     index_col = ['tno', 'stint']
-    data_col = [ 'poss', 'ortg', 'drtg', 'net_rtg',
-                'fga', 'fgm', 'fgp', 'pts',
-                'patra', 'patrm', 'patrp',
-                '3pt_fga', '3pt_fgm', '3pt_fgp',
-                '2pt_fga', '2pt_fgm', '2pt_fgp',
-                'fta', 'ftm', 'ftp', 'reb',
-                'ast', 'ast_rate', 'fgm_astp',
-                'stl', 'stl_rate',
-                'blk', 'blk_rate',
-                'tov', 'tov_rate',
-                'dreb', 'drbp',
-                'oreb', 'orbp',
-                'trb',  'trbp',
-                'ballhand', 'badpass',
-                'ofoul',
-                '3sec', '8sec', '24sec', 
-                'opp_fga_blocked']
-    stats_df = stats_df[index_col + data_col + [f'{x}_opp' for x in data_col]]
+    stats_df = stats_df[index_col + DATA_COLS + [f'{x}_opp' for x in DATA_COLS]]
 
     # 8. Add stint info to stat df
     stints1_df['tno'] = 1

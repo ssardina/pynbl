@@ -51,11 +51,11 @@ def get_json_data(game_id: int) :
     Returns:
         json-object: An object with JSON structure dict/list
     """
-    game_file = os.join(DATA_DIR, f"data-{game_id}.json")
+    game_file = os.path.join(DATA_DIR, f"data-{game_id}.json")
     game_url = os.path.join(URL_LIVESTATS, str(game_id), "data.json")
 
     if os.path.exists(game_file):
-        data_json = json.load(open(f'data-{game_id}.json'))
+        data_json = json.load(open(game_file))
         # print(f"Game data loaded from local file: {game_file}")
     else:   # get if from URL
         # store the response of URL
