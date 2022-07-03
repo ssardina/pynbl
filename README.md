@@ -10,13 +10,38 @@ The script can also provide:
 
 ## Pre-requisites
 
-The script runs on Python and requires `panda`:
+The script runs on Python and requires `panda` and `dtale`:
 
 ```shell
-$ pip install pandas
+$ pip install pandas dtale
 ```
 
-## JSON game data via Fibalivestats
+For the doing plots and charts:
+
+```shell
+$ pip install matplotlib seaborn 
+```
+
+## How to use it
+
+The basic system is in Jupyter notebook [bball_stats.ipynb](bball_stats.ipynb).
+
+The data computed are:
+
+- `stats_df`: a Pandas DataFrame (i.e., table) with all statistics per team stints in games.
+- `games_df`: a Pandas DataFrame (i.e., table) with games's scraped.
+
+In order to be able to incrementally extend the existing database/tables as new games are played, the system starts by loading pre-saved tables, from files `file_stats_df` and `games_stats_df`.
+
+It will then scrape all games defined in list `games`, one by one, will compute the stint stats and the game info.
+
+The new tables are the initial tables plus the new games and stats.
+
+Finally, it is possible to materialize (i.e., save) the new updated tables to file. This will avoid re-computing the stats for all the old games.
+
+## Development info
+
+### JSON game data via Fibalivestats
 
 Game data is provided by link:
 
@@ -28,7 +53,7 @@ https://nbl.com.au/games/2087737
 
 The service seems to be provided by [Genius Sports ](https://developer.geniussports.com/), which also provides _livestream data feed_, but seems to require an API key via registration. Developer info can be found [here](https://developer.geniussports.com/livestats/tvfeed/index_basketball.html); see also links below.
 
-## Data format
+### Data format
 
 | ID            | Description | Format | Type |
 | -----------   | ----------- | ------ | ---- |
