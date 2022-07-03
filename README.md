@@ -31,7 +31,14 @@ The data computed are:
 - `stats_df`: a Pandas DataFrame (i.e., table) with all statistics per team stints in games.
 - `games_df`: a Pandas DataFrame (i.e., table) with games's scraped.
 
-In order to be able to incrementally extend the existing database/tables as new games are played, the system starts by loading pre-saved tables, from files `file_stats_df` and `games_stats_df`.
+The steps are as follows:
+
+1. **Define the new games** to be scraped and computed, together with the files where existing previous data (stats and games) has been saved.
+   * Each game needs a game-id, and the game numbers for each team.
+2. **Run the system** to compute new stats and games and append them with the existing saved ones (if any).
+3. **Save updated stats and games** to file (for later incremental extension).
+
+Note that, in order to be able to incrementally extend the existing database/tables as new games are played, the system starts by loading pre-saved tables, from files `file_stats_df` and `games_stats_df`.
 
 It will then scrape all games defined in list `games`, one by one, will compute the stint stats and the game info.
 
