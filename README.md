@@ -1,22 +1,42 @@
-# Basketball Statistics
+# Pynblstats: Python AUS Bball Statistic System
 
-## Game data
+## JSON game data via Fibalivestats
 
-The game data is provided live by [Genius Sports ](https://developer.geniussports.com/).
+Game data is provided by link:
 
-The documentation for the Basketball feed can be found [here](https://developer.geniussports.com/livestats/tvfeed/index_basketball.html).
+https://fibalivestats.dcd.shared.geniussports.com/data/XXXXXXX/data.json
 
-Messages are sent in JSON structures and use UTF-8 format.
+where `XXXXXXX` refers to the game id. This game id can be obtained from the NBL link, for example for game id `2087737`:
 
-An example of a raw JSON file:
+https://nbl.com.au/games/2087737
 
-https://fibalivestats.dcd.shared.geniussports.com/data/2087737/data.json
+The service seems to be provided by [Genius Sports ](https://developer.geniussports.com/), which also provides _livestream data feed_, but seems to require an API key via registration. Developer info can be found [here](https://developer.geniussports.com/livestats/tvfeed/index_basketball.html); see also links below.
 
-The game ID (`2087737` in this case) can be obtained from the URL of NBL, for example: https://nbl.com.au/games/2087737
+## Data format
 
-However that JSON files does not seem to match the above doc... :-)
+| ID            | Description | Format | Type |
+| -----------   | ----------- | ------ | ---- |
+| `gt`          | Game time | `datetime.time`  | `MM:SS`
+| `clock`       | Clock time    | `datetime.time`   | `MM:SS:CC`
+| `s1`       | Score team 1 | `int`
+| `s2`       | Score team 2 | `int`
 
-## Data analytic systems
+where:
+
+- `MM:SS:CC`, where `CC` is hundredths of a second. When a period starts, lock is "`10:00:00`" (10 min left).
+
+## Related links
+
+### APIs
+
+- [NBL Game Fixture](https://nbl.com.au/fixture).
+- [Genius Sports Developmer Centre](https://developer.geniussports.com/).
+  - [Genius API - Overview and Documentation](https://support.geniussports.com/en/support/solutions/articles/9000008009-api-feed-overview-and-documentation
+  - [REST API Documentation](https://developer.geniussports.com/warehouse/rest/index_basketball.html).
+  - Get all matches (but requires key!): https://api.wh.geniussports.com/v1/basketball/stream/matches
+- [Best API](https://betsapi.com/l/1714/Australia-NBL): paid RESTful API.
+
+### Data analytic systems
 
 Here is a link to the [Rscript repo](https://github.com/jgalowe/euRobasketAu?organization=jgalowe&organization=jgalowe) that I use right now if it is of any use to you:
 
@@ -25,28 +45,3 @@ It scrapes the data and then converts the raw numbers into _advanced stats_.
 And here is a link to the tableau dashboard (doesn't look very nice, I'm the only person who uses it):
 
 https://public.tableau.com/app/profile/john5460/viz/NBL2021-22/CompareOnOff?publish=yes
-
-## Data format
-
-| ID            | Description | Format | Type |
-| -----------   | ----------- | ------ | ---- |
-| `gt`          | Game time | `Timedelta`  | `MM:SS`
-| `clock`       | Clock time    | `Timedelta`   | `MM:SS:CC`
-| `s1`       | Score team 1 | `int`
-| `s2`       | Score team 2 | `int`
-
-where:
-
-- `MM:SS:CC`, where `CC` is hundredths of a second. When a period starts, lock is "`10:00:00`" (10 min left).
-
-### Other information on format
-
-* `gt` and `clock_time`. We used [Timestamp](https://pandas.pydata.org/docs/reference/api/pandas.Timestamp.html), the Pandas version of Datetime.
-  * One could also consider using [Timedelta](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.to_timedelta.html).
-  * `clock time` uses `MM:SS:CC` where `CC` is hundredths of seconds, which is read as microseconds. So `00:05:10` is 00:00:05.100` which is correct.
-  * We can use `.dt.time` on a `datetime` to extract just the time.
-  * We can eventually do  `errors=coerece` to get `NaN` on errors.
-## Questions
-
-- Where is the format documented?
-
