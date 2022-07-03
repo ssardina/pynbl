@@ -31,7 +31,7 @@ where:
 
 - [NBL Game Fixture](https://nbl.com.au/fixture).
 - [Genius Sports Developmer Centre](https://developer.geniussports.com/).
-  - [Genius API - Overview and Documentation](https://support.geniussports.com/en/support/solutions/articles/9000008009-api-feed-overview-and-documentation
+  - [Genius API - Overview and Documentation](https://support.geniussports.com/en/support/solutions/articles/9000008009-api-feed-overview-and-documentation).
   - [REST API Documentation](https://developer.geniussports.com/warehouse/rest/index_basketball.html).
   - Get all matches (but requires key!): https://api.wh.geniussports.com/v1/basketball/stream/matches
 - [Best API](https://betsapi.com/l/1714/Australia-NBL): paid RESTful API.
