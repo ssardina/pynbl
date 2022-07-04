@@ -463,14 +463,14 @@ def build_game_stints_stats_df(game_id : int) -> pd.DataFrame:
 
     score_1, score_2 = get_team_scores(game_json)
 
-    print(f"====> Game {team_name_1} ({team_short_name_1}) vs {team_name_2} ({team_short_name_2})")
-    print(f"Play-by-play df for game {game_id}: {pbp_df.shape}")
+    # print(f"====> Game {team_name_1} ({team_short_name_1}) vs {team_name_2} ({team_short_name_2})")
+    # print(f"Play-by-play df for game {game_id}: {pbp_df.shape}")
 
     # 3. Compute stints for each team
     starters_1 = get_starters(game_json, 1)
     starters_2 = get_starters(game_json, 2)
-    for x in zip([team_name_1, team_name_2], [starters_1, starters_2]):
-        print(f"Starters for {x[0]}: {x[1]}")
+    # for x in zip([team_name_1, team_name_2], [starters_1, starters_2]):
+    #     print(f"Starters for {x[0]}: {x[1]}")
 
     stints_1 = pbp_stints_extract(pbp_df, starters_1, 1)
     stints_2 = pbp_stints_extract(pbp_df, starters_2, 2)
