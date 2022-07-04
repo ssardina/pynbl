@@ -385,7 +385,8 @@ def build_team_stint_stats_df(pbp_df: pd.DataFrame, tno: int, stint_col: str) ->
         df[F_ASTR] = tools.percent(df[F_AST], df[F_POSS])
         df[F_TOVR] = tools.percent(df[F_TOV], df[F_POSS])
 
-        # `team_ts%` = round(100*(sum(lineup_dat$team_pts)/(2*(team_fga + 0.44*sum(lineup_dat$team_fta)))),2)
+        # TS% = true shooting percentage, combines 2pts, 3pts, ft
+        df[F_TSP] = tools.percent(df[F_PTS], 2*(df[F_FGA] + 0.44*df[F_FTA]))
 
         # Fill all NaN with 0
         # This is not correct: NaN will arise when dividing by 0 (for %), and we want to keep NaN which is different from having 0

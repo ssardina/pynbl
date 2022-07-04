@@ -37,6 +37,7 @@ F_FT = 'ft'
 F_FTA = 'ft' + 'a'
 F_FTM = 'ft' + 'm'
 F_FTP = 'ft' + 'p'
+F_TSP = 'tsp'   # true shooting percentage,
 
 F_AST = "ast"
 F_ASTR = "ast_rate"
@@ -66,18 +67,23 @@ F_24SEC = '24sec'
 F_OPPFGABLK = 'opp_fga_blocked'
 
 DATA_COLS = [ F_POSS, F_ORTG, F_DRTG, F_NRTG,
+                #  Shooting
                 F_FGA, F_FGM, F_FGP, F_PTS,
                 F_PATRA, F_PATRM, F_PATRP,
                 F_3PTFGA, F_3PTFGM, F_3PTFGP,
                 F_2PTFGA, F_2PTFGM, F_2PTFGP,
-                F_FTA, F_FTM, F_FTP, F_REB,
+                F_FTA, F_FTM, F_FTP, 
+                F_TSP,
+                # positive plays
                 F_AST, F_ASTR, F_FGMASTP,
                 F_STL, F_STLR,
                 F_BLK, F_BLKR,
                 F_TOV, F_TOVR,
+                F_REB,
                 F_DREB, F_DREBP,
                 F_OREB, F_OREBP,
                 F_TRB,  F_TRBR,
+                # neg plays
                 F_BALLHAND, F_BADPASS,
                 F_OFOUL,
                 F_3SEC, F_8SEC, F_24SEC,
