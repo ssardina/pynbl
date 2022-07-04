@@ -69,3 +69,42 @@ def get_json_data(game_id: int, reload=False) :
         # print(f"Game data loaded from URL: {game_url}")
 
     return data_json
+
+
+def get_game_info(game_id : int) -> dict:
+    import requests
+    from bs4 import BeautifulSoup # https://stackabuse.com/guide-to-parsing-html-with-beautifulsoup-in-python/
+    import re
+    import datetime
+
+    url = f"https://fibalivestats.dcd.shared.geniussports.com/u/NBL/{game_id}/"
+
+    # get HTML text
+    r = requests.get(url)
+    html_text = r.text
+
+    # parse to find and extract date
+    soup = BeautifulSoup(html_text, "html.parser")
+    # print(f"Parsing HTML with head title: {soup.head.title}\n")
+
+    # init dict to collect all relevant info
+    game_dict = {}
+
+    match_detail_blocks = soup.find_all("div", class_="matchDetail")
+
+    # collect venue
+    venue = match_detail_blocks[1].text.strip().encode("ascii", "ignore").decode("ascii")
+    # game_dict["venue"] = venue[39:]
+    game_dict["venue"] = venue.splitlines()[2]
+
+    # collect tip-off date
+    tip_off = match_detail_blocks[2].text.strip().encode("ascii", "ignore").decode("ascii")
+    date_txt = re.search('\d*/\d*/\d*', tip_off).group(0)   # extract date
+    game_dict["date"] = datetime.datetime.strptime(date_txt, "%d/%m/%y")
+
+    # for x in soup.find_all("div", class_="matchDetail"):
+    #     x = x.text.strip().encode("ascii", "ignore").decode("ascii")
+    #     print(x)
+    #     print("==========")
+
+    return game_dict
