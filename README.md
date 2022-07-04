@@ -55,7 +55,7 @@ Finally, it is possible to materialize (i.e., save) the new updated tables to fi
 
 ### JSON game data via Fibalivestats
 
-Game data is provided by link:
+**Game data** as JSON file is provided by link:
 
 https://fibalivestats.dcd.shared.geniussports.com/data/XXXXXXX/data.json
 
@@ -64,6 +64,16 @@ where `XXXXXXX` refers to the game id. This game id can be obtained from the NBL
 https://nbl.com.au/games/2087737
 
 The service seems to be provided by [Genius Sports ](https://developer.geniussports.com/), which also provides _livestream data feed_, but seems to require an API key via registration. Developer info can be found [here](https://developer.geniussports.com/livestats/tvfeed/index_basketball.html); see also links below.
+
+The date of the game is scraped from HTML pages (via [request](https://requests.readthedocs.io/en/latest/) and [BeautifulSoup](https://www.crummy.com/software/BeautifulSoup/bs4/doc/) Python packages) using links of this form:
+
+https://fibalivestats.dcd.shared.geniussports.com/u/NBL/1976446/
+
+Some other information can be obtained with the following type of links:
+
+https://fibalivestats.dcd.shared.geniussports.com/data/competition/30249.json
+
+Although it is not clear what `30249` means and how it can be obtained.
 
 ### Data format
 
@@ -78,19 +88,24 @@ where:
 
 - `MM:SS:CC`, where `CC` is hundredths of a second. When a period starts, lock is "`10:00:00`" (10 min left).
 
-## Related links
+## API Services
 
-### APIs
+### Genious Sports
 
-- [NBL Game Fixture](https://nbl.com.au/fixture).
-- [FIBA LiveStats V7](http://www.fibaorganizer.com/): a notebook-based software application to record basketball game statistics and webcast games in real time.
-  - [Genius Sports Developer Centre](https://developer.geniussports.com/).
+- [Genius Sports Developer Centre](https://developer.geniussports.com/).
     - [Genius API - Overview and Documentation](https://support.geniussports.com/en/support/solutions/articles/9000008009-api-feed-overview-and-documentation).
   - [REST API Documentation](https://developer.geniussports.com/warehouse/rest/index_basketball.html).
   - Get all matches (but requires key!): https://api.wh.geniussports.com/v1/basketball/stream/matches
+
+
+## Related links
+
+- [NBL Game Fixture](https://nbl.com.au/fixture).
+- [FIBA LiveStats V7](http://www.fibaorganizer.com/): a notebook-based software application to record basketball game statistics and webcast games in real time.
+  
 - [Best API](https://betsapi.com/l/1714/Australia-NBL): paid RESTful API.
 
-### Data analytic systems
+## Data analytic systems
 
 Here is a link to the [Rscript repo](https://github.com/jgalowe/euRobasketAu?organization=jgalowe&organization=jgalowe) that I use right now if it is of any use to you:
 
