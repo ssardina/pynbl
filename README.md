@@ -18,7 +18,7 @@ The system can also extract, via various functions, the following information:
 - The **starting lineup** of a team.
 - **Game information**, including teams, scores, venue, and date.
 
-## Pre-requisites
+## 1. Pre-requisites
 
 The system needs Python and Jupyter notebook, and requires at least `panda` and `dtale` packages:
 
@@ -34,7 +34,7 @@ $ pip install matplotlib seaborn
 
 The system has been developed with [VS Code](https://code.visualstudio.com/docs/datascience/jupyter-notebooks) and its [Jupyter extension](https://pypi.org/project/jupyter/).
 
-## How to use it
+## 2. How to use it
 
 The basic system is in Jupyter notebook [bball_stats.ipynb](bball_stats.ipynb). This can be opened and used via the browser (with a proper Juypter server running) or better via [VS Code](https://code.visualstudio.com/docs/datascience/jupyter-notebooks).
 
@@ -59,7 +59,7 @@ The new tables are the initial tables plus the new games and stats.
 
 Finally, it is possible to materialize (i.e., save) the new updated tables to file. This will avoid re-computing the stats for all the old games.
 
-## Development info
+## 3. Development info
 
 ### JSON game data via Fibalivestats
 
@@ -85,6 +85,7 @@ Although it is not clear what `30249` means and how it can be obtained.
 
 ### JSON Data format
 
+**[INCOMPLETE]**
 
 | ID            | Description | Format | Type |
 | -----------   | ----------- | ------ | ---- |
@@ -105,10 +106,7 @@ A good example of statistic fields and settings that can be done can be found he
 
 https://www.basketball-reference.com/players/a/antetgi01/lineups/2016
 
-
-
-
-## API Services
+## 4. API Services
 
 ### Genius Sports
 
@@ -117,12 +115,11 @@ https://www.basketball-reference.com/players/a/antetgi01/lineups/2016
   - [REST API Documentation](https://developer.geniussports.com/warehouse/rest/index_basketball.html).
   - Get all matches (but requires key!): https://api.wh.geniussports.com/v1/basketball/stream/matches
 
+## Other APIs and pages
 
-## Related links
-
+- Game information page: https://fibalivestats.dcd.shared.geniussports.com/u/NBL/\<GAME_ID\>
 - [NBL Game Fixture](https://nbl.com.au/fixture).
 - [FIBA LiveStats V7](http://www.fibaorganizer.com/): a notebook-based software application to record basketball game statistics and webcast games in real time.
-  
 - [Best API](https://betsapi.com/l/1714/Australia-NBL): paid RESTful API.
 
 ## Other similar systems
