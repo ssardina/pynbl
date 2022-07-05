@@ -58,6 +58,14 @@ To incrementally extend the existing database/tables as new games are played, th
 
 At the end, the new tables `stats_df` and `games_df`  are the initial (loaded) tables plus the new stats and games data form the new games. These new tables can finally be materialized (i.e., saved) to file. This will avoid re-computing the stats for all the old games, next time the system is run.
 
+### Main functions
+
+* `bball_stats.build_game_stints_stats_df(game_id)`
+* `tools.get_game_info(game_id)`
+* `bball_stats.pbp_get_ranges_mask(pbp_df: pd.DataFrame, time_intervals: list) -> pd.Series`
+* `bball_stats.get_starters(game_json, tm: int) -> set`
+* `bball_stats.get_pbp_df(data_json)`
+
 ## 3. Development info
 
 ### JSON game data via Fibalivestats
@@ -84,7 +92,7 @@ Although it is not clear what `30249` means and how it can be obtained.
 
 ### JSON Data format
 
-**[INCOMPLETE]**
+**[INCOMPLETE - TO DEVELOP]**
 
 | ID            | Description | Format | Type |
 | -----------   | ----------- | ------ | ---- |
@@ -104,6 +112,11 @@ Various advanced statistics are calculated from play-by-play. These are used at 
 A good example of statistic fields and settings that can be done can be found here:
 
 https://www.basketball-reference.com/players/a/antetgi01/lineups/2016
+
+### Data visualization
+
+* [Public Tableau](https://public.tableau.com) can be used to visualize the data produced by this system, for example https://public.tableau.com/app/profile/john5460/viz/NBL2021-22/CompareOnOff?publish=yes.
+* Special graphs and charts can be done using [seaborn](https://seaborn.pydata.org/) and [matplotlib](https://matplotlib.org/). **[INCOMPLETE - TO DEVELOP]**
 
 ## 4. API Services
 
@@ -125,10 +138,5 @@ https://www.basketball-reference.com/players/a/antetgi01/lineups/2016
 
 * [euRobasketAu](https://github.com/jgalowe/euRobasketAu?organization=jgalowe&organization=jgalowe): a collection of R scripts to  scrape game data from [fibalivestats](http://www.fibaorganizer.com/) and calculate _advanced stats_. It is an adaptation of a system for European leagues and the system Py-nbl-stats is inspired on.
 
-bball_stats.build_game_stints_stats_df(game_id)
+## Contact & Contributions
 
-
-
-And here is a link to the tableau dashboard (doesn't look very nice, I'm the only person who uses it):
-
-https://public.tableau.com/app/profile/john5460/viz/NBL2021-22/CompareOnOff?publish=yes
