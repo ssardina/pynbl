@@ -1,12 +1,12 @@
-# Pynblstats: Python AUS Bball Statistic System
+# Py-nbl-stats: Python AUS Bball Statistic System
 
-The scripts and notebooks in this repo allows to extract information and statistics from Basketball game data provided by [fibalivestats](http://www.fibaorganizer.com/) for the [NBL Australian Basketball](https://nbl.com.au/) competition.
+The scripts and notebooks in this repo allows to extract information and statistics from Basketball game data provided by [fibalivestats](http://www.fibaorganizer.com/) for the [NBL Australian Basketball](https://nbl.com.au/) competition. It is similar in functionality and is inspired in R-based system [euRobasketAu](https://github.com/jgalowe/euRobasketAu?organization=jgalowe&organization=jgalowe).
 
 The data is mostly provided as JSON files via a game-id number, and most of the information extracted is in the form of [Panda](https://pandas.pydata.org/) dataframes.
 
-The **main system** is a Jupyter Notebook [bball_stats.ipynb](bball_stats.ipynb), which can be used to _incrementally_ construct (i.e., by extending previous results) statistical tables as games are played along the season. 
+The **main system** is a Jupyter Notebook [bball_stats.ipynb](bball_stats.ipynb), which can be used to _incrementally_ construct (i.e., extend previous results) statistical tables as games are played along the season. 
 
-The output of this notebook is:
+The **output** of this notebook/system are:
 
 - a Pandas table with stats for each teams' _stint_ (e.g., lineup of players who played together in different intervals during the game).
 - a Pandas table with games' information (e.g., team names, scores, date, venue, etc.).
@@ -36,7 +36,7 @@ The system has been developed with [VS Code](https://code.visualstudio.com/docs/
 
 ## 2. How to use it
 
-The basic system is in Jupyter notebook [bball_stats.ipynb](bball_stats.ipynb). This can be opened and used via the browser (with a proper Juypter server running) or better via [VS Code](https://code.visualstudio.com/docs/datascience/jupyter-notebooks).
+The main system is implemented as Jupyter notebook [bball_stats.ipynb](bball_stats.ipynb). This notebook can be opened and used via the browser (with a proper Juypter server running) or better via [VS Code](https://code.visualstudio.com/docs/datascience/jupyter-notebooks).
 
 The data computed are:
 
@@ -46,18 +46,17 @@ The data computed are:
 
 The steps are as follows:
 
-1. **Define the new games** to be scraped and computed, together with the files where existing previous data (stats and games) has been saved.
+1. **Define variables** initial variables for the run:
+   * `games`: a list of game tuples/ids representing the games to scrape and process. Each tuple should be of the form `(game_id, game1, round1, game2, round2)`. If only the `game_id` is given, all the other data will set to `np.NaN` ("missing").
+   * `file_stats_df` and `games_stats_df` to point to the Pickle files storing the initial stat and ame tables that have already been computed (for previous games so far).
+2. **Define the new games** to be scraped and computed, together with the files where existing previous data (stats and games) has been saved.
    * Each game needs a game-id, and the game numbers for each team.
-2. **Run the system** to compute new stats and games and append them with the existing saved ones (if any).
-3. **Save updated stats and games** to file (for later incremental extension).
+3. **Run the system** to compute new stats and games and append them with the existing saved ones (if any).
+4. **Save updated stats and games** to file (for later incremental extension).
 
-Note that, in order to be able to incrementally extend the existing database/tables as new games are played, the system starts by loading pre-saved tables, from files `file_stats_df` and `games_stats_df`.
+To incrementally extend the existing database/tables as new games are played, the system starts by loading pre-saved tables (from files `file_stats_df` and `games_stats_df`), and then goes to scrape all new games defined in list `games`, one by one, and calculate the stint stats and game info.
 
-It will then scrape all games defined in list `games`, one by one, will compute the stint stats and the game info.
-
-The new tables are the initial tables plus the new games and stats.
-
-Finally, it is possible to materialize (i.e., save) the new updated tables to file. This will avoid re-computing the stats for all the old games.
+At the end, the new tables `stats_df` and `games_df`  are the initial (loaded) tables plus the new stats and games data form the new games. These new tables can finally be materialized (i.e., saved) to file. This will avoid re-computing the stats for all the old games, next time the system is run.
 
 ## 3. Development info
 
@@ -115,7 +114,7 @@ https://www.basketball-reference.com/players/a/antetgi01/lineups/2016
   - [REST API Documentation](https://developer.geniussports.com/warehouse/rest/index_basketball.html).
   - Get all matches (but requires key!): https://api.wh.geniussports.com/v1/basketball/stream/matches
 
-## Other APIs and pages
+### Other APIs and pages
 
 - Game information page: https://fibalivestats.dcd.shared.geniussports.com/u/NBL/\<GAME_ID\>
 - [NBL Game Fixture](https://nbl.com.au/fixture).
@@ -124,9 +123,11 @@ https://www.basketball-reference.com/players/a/antetgi01/lineups/2016
 
 ## Other similar systems
 
-* [Rscript repo](https://github.com/jgalowe/euRobasketAu?organization=jgalowe&organization=jgalowe) that I use right now if it is of any use to you:
+* [euRobasketAu](https://github.com/jgalowe/euRobasketAu?organization=jgalowe&organization=jgalowe): a collection of R scripts to  scrape game data from [fibalivestats](http://www.fibaorganizer.com/) and calculate _advanced stats_. It is an adaptation of a system for European leagues and the system Py-nbl-stats is inspired on.
 
-It scrapes the data and then converts the raw numbers into _advanced stats_.
+bball_stats.build_game_stints_stats_df(game_id)
+
+
 
 And here is a link to the tableau dashboard (doesn't look very nice, I'm the only person who uses it):
 
