@@ -40,29 +40,31 @@ F_FTP = 'ft' + 'p'
 F_TSP = 'tsp'   # true shooting percentage,
 
 F_AST = "ast"
-F_ASTR = "ast_rate"
+F_ASTR = "astr"
 F_FGMASTP = "fgm_astp"
 F_STL = 'stl'
-F_STLR = 'stl_rate'
+F_STLR = 'stlr'
 F_BLK = 'blk'
-F_BLKR = 'blk_rate'
-F_TOV = 'tovs'
-F_TOVR = 'tov_rate'
+F_BLKR = 'blkr'
 
-F_REB = 'rebs'
+F_REB = 'reb'
 F_OREB = 'oreb'
+F_ODREB= 'odreb'
 F_OREBP = 'orebp'
-F_DREB = 'drebs'
+F_DREB = 'dreb'
 F_DREBP = 'drebp'
 F_TRB = 'trb'
 F_TRBR = 'trbr'
 
-F_BALLHAND = 'ballhand'
-F_BADPASS = 'badpass'
-F_OFOUL = 'ofoul'
-F_3SEC = '3sec'
-F_8SEC = '8sec'
-F_24SEC = '24sec'
+# turn-overs
+F_TOV = 'tov'
+F_TOVR = 'tovr'
+F_BALLHAND = 'tov_bh'
+F_BADPASS = 'tov_bp'
+F_OFOUL = 'tov_ofoul'
+F_3SEC = 'tov_3sec'
+F_8SEC = 'tov_8sec'
+F_24SEC = 'tov_24sec'
 
 F_OPPFGABLK = 'opp_fga_blocked'
 

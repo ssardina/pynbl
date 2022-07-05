@@ -24,9 +24,16 @@ import tools
 
 from functools import reduce
 
-# Load relevant game data
-game_id = 742430
-game_id = 2087737
+import logging
+LOGGING_LEVEL = 'INFO'
+LOGGING_FMT = '%(asctime)s %(levelname)s %(message)s'
+
+import coloredlogs
+# Set format and level of debug
+coloredlogs.install(level=LOGGING_LEVEL, fmt=LOGGING_FMT)
+
+
+
 
 ##########################################################
 # CODE USING JSON DATA
@@ -101,8 +108,7 @@ def get_pbp_df(data_json):
     team_name_1, team_short_name_1 = team_names[0]
     team_name_2, team_short_name_2 = team_names[1]
 
-    # print(f"Game {team_name_1} ({team_short_name_1}) vs {team_name_2} ({team_short_name_2})")
-
+    logging.debug(f"Will extract PBP DF for game {team_name_1} ({team_short_name_1}) vs {team_name_2} ({team_short_name_2})")
 
     # extract play-by-play data
     pbp_df = pd.json_normalize(data_json, record_path =['pbp'])
@@ -141,9 +147,8 @@ def get_pbp_df(data_json):
     # sort by period and clock
     pbp_df.sort_values(by=['period', 'clock'], ascending=[True, False], inplace=True)
 
-    #TODO: do we need these new columns?
-    # pbp$firstName = NULL
-    # pbp$shirtNumber = NULL
+    logging.debug(f"PBP DF extracted for game {team_name_1} ({team_short_name_1}) vs {team_name_2} ({team_short_name_2})")
+
 
     return pbp_df
 
@@ -252,7 +257,8 @@ def pbp_get_ranges_df(pbp_df: pd.DataFrame, time_intervals: list) -> pd.DataFram
     Returns:
         pd.DataFrame: filtered pbp wrt time intervals given
     """
-    return pbp_df[pbp_get_ranges_mask(pbp_df, time_intervals)]
+    mask = pbp_get_ranges_mask(pbp_df, time_intervals)
+    return pbp_df[mask]
 
 
 def pbp_add_stint_col(pbp_df: pd.DataFrame, stints: dict, col_name: str) -> tuple:
@@ -317,6 +323,7 @@ def build_team_stint_stats_df(pbp_df: pd.DataFrame, tno: int, stint_col: str) ->
                 # others
                 (F_REB, 0, False, pbp_df['actionType'] == 'rebound'),
                 (F_OREB, 0, False, (pbp_df['actionType'] == 'rebound') & (pbp_df['subType'] == 'offensive')),
+                (F_ODREB, 0, False, (pbp_df['actionType'] == 'rebound') & (pbp_df['subType'] == 'offensivedeadball')),
                 (F_DREB, 0, False, (pbp_df['actionType'] == 'rebound') & (pbp_df['subType'] == 'defensive')),
                 (F_STL, 0, False, pbp_df['actionType'] == 'steal'),
                 (F_BLK, 0, False, pbp_df['actionType'] == 'block'),
@@ -330,7 +337,8 @@ def build_team_stint_stats_df(pbp_df: pd.DataFrame, tno: int, stint_col: str) ->
                 (F_8SEC, 0, False, (pbp_df['actionType'] == 'turnover') & (pbp_df['subType'] == '8sec') ),
                 (F_24SEC, 0, False, (pbp_df['actionType'] == 'turnover') & (pbp_df['subType'] == '24sec') )
         ]
-        stats_dfs = [pd.DataFrame({col_name : pbp_df[col_name].unique()})] # dummy df for left join
+        # start with a dummy df for full left join with one row per stint number: 1,2,3,...,N
+        stats_dfs = [pd.DataFrame({col_name : pbp_df[col_name].unique()})] 
         # compute a dataframe (and add it to stats_dfs) for each stat
         for stat in stats:
             name, default, rate, mask = stat
@@ -338,7 +346,7 @@ def build_team_stint_stats_df(pbp_df: pd.DataFrame, tno: int, stint_col: str) ->
             name_m = f'{name}m'
             name_p = f'{name}p'
 
-            # count no of plays that stat shows up (e.g., 2pt_fga)
+            # count no of plays that stat shows up (e.g., 2pt_fga) via the stat's mask
             df = pbp_df.loc[mask].groupby(col_name).size().reset_index(name=name_a)
 
             if rate:
@@ -443,14 +451,14 @@ def build_team_stint_stats_df(pbp_df: pd.DataFrame, tno: int, stint_col: str) ->
     return stint_stats_df
 
 
-def build_game_stints_stats_df(game_id : int) -> pd.DataFrame:
+def build_game_stints_stats_df(game_id : int) -> dict:
     """Build dataframe with stint statistics for a game, by extracting play-by-play data
 
     Args:
         game_id (int): the id of the game
 
     Returns:
-        pd.DataFrame: stint statistic dataframe
+        dict: contains stint statistic and pbp dataframes, and team info
     """
     # 1. Read game JSON file
     game_json = tools.get_json_data(game_id)
@@ -479,9 +487,10 @@ def build_game_stints_stats_df(game_id : int) -> pd.DataFrame:
     stints1_df, pbp_aux_df = pbp_add_stint_col(pbp_df, stints_1, "stint1")
     stints2_df, pbp_aux_df = pbp_add_stint_col(pbp_aux_df, stints_2, "stint2")
 
-    # 5. drop plays that are not for statistics (game events, like start/end)
+    # 5. Drop plays that are not for statistics (game events, like start/end)
     pbp_df = pbp_aux_df.loc[(~pbp_aux_df['actionType'].isin(ACT_NON_STATS))]
     pbp_df = pbp_df.loc[(~pbp_aux_df['subType'].isin(ACTSSUB_NON_STATS))]
+    pbp_df.reset_index(inplace=True, drop=True) # re-index as we may have dropped rows
 
     # 6. BUILD STATS: build stint stats for each team
     stats1_df = build_team_stint_stats_df(pbp_df, 1, "stint1")
@@ -507,9 +516,20 @@ def build_game_stints_stats_df(game_id : int) -> pd.DataFrame:
     team_name_col = stats_df.pop('team')
     stats_df.insert(1, "team", team_name_col)
 
-    return stats_df, (team_name_1, score_1), (team_name_2, score_2)
+    # 10. Build result dictionary
+    result = {}
+    result["pbp_df"] = pbp_df
+    result["team1"] = (team_name_1, score_1)
+    result["team2"] = (team_name_2, score_2)
+    result["stint_stats_df"] = stats_df
+    result['stints1_df'] = stints1_df
+    result['stints2_df'] = stints2_df
+
+    return result
 
 
 
 
 # %%
+if __name__ == "__main__":
+    logging.info("reporting log....")
