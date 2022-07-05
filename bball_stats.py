@@ -188,7 +188,7 @@ def pbp_stints_extract(pbp_df : pd.DataFrame, starter_team: set, team_no: int) -
     Returns:
         dict: stint information extracted for team_no
     """
-    stints = {} # here we will collect ther result as a dictionary!
+    stints = {} # here we will collect the result as a dictionary!
 
     current_team = starter_team # lineup start
     current_team = frozenset(current_team)
@@ -255,16 +255,27 @@ def pbp_get_ranges_df(pbp_df: pd.DataFrame, time_intervals: list) -> pd.DataFram
         time_interval (list(int, datetime.time, datetime.time)): list of time intervals
 
     Returns:
-        pd.DataFrame: filtered pbp wrt time intervals given
+        pd.DataFrame: filtered PBP df wrt time intervals given
     """
     mask = pbp_get_ranges_mask(pbp_df, time_intervals)
     return pbp_df[mask]
 
 
-def pbp_add_stint_col(pbp_df: pd.DataFrame, stints: dict, col_name: str) -> tuple:
+def pbp_add_stint_col(pbp_df: pd.DataFrame, stints: dict, stint_col: str) -> tuple:
+    """Extend a PBP df with a stint column denoting the lineup stint in each play
+
+    Args:
+        pbp_df (pd.DataFrame): the PBP df to annotate with stints
+        stints (dict): the set of stint lineups, each containing a set of interval times
+        col_name (str): the column name to use for stint identification of each play
+
+    Returns:
+        tuple(pd.DataFrame, pd.DataFrame):
+            stint data as a dataframe + PBP df with stint id
+    """
     pbp2_df = pbp_df.copy()
-    pbp2_df[col_name] = -1  # integer columns cannot store NaN, so we use -1 (no stint)
-    pbp2_df.astype({col_name: 'int32'})
+    pbp2_df[stint_col] = -1  # integer columns cannot store NaN, so we use -1 (no stint)
+    pbp2_df.astype({stint_col: 'int32'})
 
     # build dataframe with teams and id
     stints_df = pd.DataFrame({'id': pd.Series(dtype='int'),
@@ -272,13 +283,13 @@ def pbp_add_stint_col(pbp_df: pd.DataFrame, stints: dict, col_name: str) -> tupl
                    'intervals': pd.Series(dtype='object')
                    })
     for lineup in enumerate(stints, start=1):
-        row = {'id' : lineup[0], 'lineup' : lineup[1], 'intervals' : stints[lineup[1]]}
+        row = {'id' : lineup[0], 'lineup' : sorted(lineup[1]), 'intervals' : stints[lineup[1]]}
         stints_df = stints_df.append(row, ignore_index=True)
 
         # add column with stint id
         intervals_team = stints[lineup[1]]
         mask = pbp_get_ranges_mask(pbp_df, intervals_team)
-        pbp2_df.loc[mask, col_name] = lineup[0]
+        pbp2_df.loc[mask, stint_col] = lineup[0]
 
     stints_df['mins'] = stints_df['intervals'].apply(tools.intervals_to_mins)
 
