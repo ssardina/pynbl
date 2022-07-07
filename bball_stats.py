@@ -117,8 +117,15 @@ def get_pbp_df(data_json):
     # extract play-by-play data
     pbp_df = pd.json_normalize(data_json, record_path =['pbp'])
 
+    # standarize player's name to be used all over
+    pbp_df['player'] = pbp_df.apply(lambda x: f"{x['internationalFirstNameInitial']}. {x['internationalFamilyName']}", axis=1)
+
     # keep columns 1 to 17, drop all player info
-    pbp_df = pbp_df.iloc[:, 1:17]
+    # This is what is kept ['clock', 's1', 's2', 'lead', 'tno', 'period', 'periodType', 'pno',
+    #    'player', 'success', 'actionType', 'actionNumber', 'previousAction',
+    #    'qualifier', 'subType', 'scoring']
+    # pbp_df = pbp_df.iloc[:, 1:17]
+    pbp_df = pbp_df[['clock', 's1', 's2', 'lead', 'tno', 'period', 'periodType', 'pno', 'player', 'success', 'actionType', 'actionNumber', 'previousAction', 'qualifier', 'subType', 'scoring']]
 
     # set type of time fields
     # pbp_df['gt'] = pd.to_datetime(pbp_df['gt'], format="%M:%S").dt.time
@@ -126,6 +133,8 @@ def get_pbp_df(data_json):
 
     # change period id of OT
     #TODO: why is this change to a number 5??
+    # ANSW: I get it, to be able to extract stints and go over period times 1,2,3,4,.., 5
+    # but its strange they dont change period, but the type. We will deal with both fields explicitly..
     #periodType == 'OVERTIME'] = 5
     pbp_df.loc[pbp_df["periodType"] == 'OVERTIME', 'periodType'] = 5
 
@@ -201,9 +210,10 @@ def pbp_stints_extract(pbp_df : pd.DataFrame, starter_team: set, team_no: int) -
         prev_clock = datetime.time.fromisoformat('00:10:00.000000')
         prev_clock = datetime.time(hour=0, minute=10, second=0)
         end_clock = datetime.time(hour=0, minute=0, second=0)
-        subs = pbp_df.loc[(pbp_df['actionType'] == 'substitution') &
+        subs = pbp_df.loc[(pbp_df['actionType'] == 'substitution') &    # all subs done in period
                             (pbp_df['tno'] == team_no) &
-                            (pbp_df['period'] == period)]
+                            (pbp_df['period'] == period) &
+                            (pbp_df['periodType'] == 'REGULAR')]
         for sub_clock in list(subs['clock'].unique()) + [end_clock]: # loo on the sub times for the team
             # interval = pd.Interval(datetime.datetime.timestamp(prev_clock), datetime.datetime.timestamp(sub_clock), closed='left')
             interval = (period, prev_clock, sub_clock)
@@ -212,22 +222,20 @@ def pbp_stints_extract(pbp_df : pd.DataFrame, starter_team: set, team_no: int) -
             else:
                 stints[current_team] = [interval]
 
+
             players_in = set(subs.loc[(subs['clock'] == sub_clock) &
                                     (subs['subType'] == 'in'), 'player'].tolist())
             players_out = set(subs.loc[(subs['clock'] == sub_clock) &
                                     (subs['subType'] == 'out'), 'player'].tolist())
-            print("===> Change at time: ", sub_clock)
-            print("Players out: ", players_out)
-            print("Players in: ", players_in)
-            print("Current team: ", current_team)
+            logging.debug(f"=====> Substitution period {period} at time: {sub_clock}")
+            logging.debug(f"Players out: {players_out}")
+            logging.debug(f"Players in: {players_in}")
+            logging.debug(f"Current team: {current_team}")
             current_team = current_team.difference(players_out).union(players_in)
-            print("New team: ", current_team)
+            logging.debug(f"New team: {current_team}")
 
             # reset prev clock for next subs
             prev_clock = sub_clock
-
-            # print(f'Subs at time {sub_clock}: {players_in} for {players_out}')
-            # print(f"\t New team: {current_team}")
 
     return stints
 
