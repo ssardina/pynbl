@@ -25,6 +25,7 @@ import tools
 from functools import reduce
 
 import logging
+
 LOGGING_LEVEL = 'INFO'
 LOGGING_LEVEL = 'DEBUG'
 
@@ -34,7 +35,8 @@ import coloredlogs
 # Set format and level of debug
 coloredlogs.install(level=LOGGING_LEVEL, fmt=LOGGING_FMT)
 
-
+def set_logging(level):
+    coloredlogs.install(level=level, fmt=LOGGING_FMT)
 
 
 ##########################################################
