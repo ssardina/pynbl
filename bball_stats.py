@@ -26,6 +26,8 @@ from functools import reduce
 
 import logging
 LOGGING_LEVEL = 'INFO'
+LOGGING_LEVEL = 'DEBUG'
+
 LOGGING_FMT = '%(asctime)s %(levelname)s %(message)s'
 
 import coloredlogs
@@ -97,7 +99,9 @@ def get_starters(game_json, tm: int) -> set:
     pl_df = get_game_players(game_json, tm)
 
     # list of starters on each team
-    starters = set(pl_df.loc[pl_df['starter'] == 1, 'name'].tolist())
+    # starters = set(pl_df.loc[pl_df['starter'] == 1, 'name'].tolist())
+    starters_df = pl_df.loc[pl_df['starter'] == 1]
+    starters = set(starters_df.apply(lambda x: f"{x['internationalFirstNameInitial']}. {x['internationalFamilyName']}", axis=1).tolist())
 
     return starters
 
@@ -108,7 +112,7 @@ def get_pbp_df(data_json):
     team_name_1, team_short_name_1 = team_names[0]
     team_name_2, team_short_name_2 = team_names[1]
 
-    logging.debug(f"Will extract PBP DF for game {team_name_1} ({team_short_name_1}) vs {team_name_2} ({team_short_name_2})")
+    logging.debug(f"Will extract PBP df for game {team_name_1} ({team_short_name_1}) vs {team_name_2} ({team_short_name_2})")
 
     # extract play-by-play data
     pbp_df = pd.json_normalize(data_json, record_path =['pbp'])
@@ -147,7 +151,7 @@ def get_pbp_df(data_json):
     # sort by period and clock
     pbp_df.sort_values(by=['period', 'clock'], ascending=[True, False], inplace=True)
 
-    logging.debug(f"PBP DF extracted for game {team_name_1} ({team_short_name_1}) vs {team_name_2} ({team_short_name_2})")
+    logging.debug(f"PBP df extracted for game {team_name_1} ({team_short_name_1}) vs {team_name_2} ({team_short_name_2})")
 
 
     return pbp_df
@@ -192,7 +196,7 @@ def pbp_stints_extract(pbp_df : pd.DataFrame, starter_team: set, team_no: int) -
 
     current_team = starter_team # lineup start
     current_team = frozenset(current_team)
-    # print(f"Starter team: {current_team}")
+    logging.debug(f"Start computing stints for team {team_no} with starters: {current_team}")
     for period in range(1, 5):
         prev_clock = datetime.time.fromisoformat('00:10:00.000000')
         prev_clock = datetime.time(hour=0, minute=10, second=0)
@@ -212,7 +216,12 @@ def pbp_stints_extract(pbp_df : pd.DataFrame, starter_team: set, team_no: int) -
                                     (subs['subType'] == 'in'), 'player'].tolist())
             players_out = set(subs.loc[(subs['clock'] == sub_clock) &
                                     (subs['subType'] == 'out'), 'player'].tolist())
+            print("===> Change at time: ", sub_clock)
+            print("Players out: ", players_out)
+            print("Players in: ", players_in)
+            print("Current team: ", current_team)
             current_team = current_team.difference(players_out).union(players_in)
+            print("New team: ", current_team)
 
             # reset prev clock for next subs
             prev_clock = sub_clock
@@ -501,7 +510,7 @@ def build_game_stints_stats_df(game_id : int) -> dict:
     # 5. Drop plays that are not for statistics (game events, like start/end)
     pbp_df = pbp_aux_df.loc[(~pbp_aux_df['actionType'].isin(ACT_NON_STATS))]
     pbp_df = pbp_df.loc[(~pbp_aux_df['subType'].isin(ACTSSUB_NON_STATS))]
-    pbp_df.reset_index(inplace=True, drop=True) # re-index as we may have dropped rows
+    pbp_df.reset_index(inplace=True, drop=True)     # re-index as we may have dropped rows
 
     # 6. BUILD STATS: build stint stats for each team
     stats1_df = build_team_stint_stats_df(pbp_df, 1, "stint1")
