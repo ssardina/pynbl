@@ -121,6 +121,7 @@ def get_pbp_df(data_json):
 
     # standarize player's name to be used all over
     pbp_df['player'] = pbp_df.apply(lambda x: f"{x['internationalFirstNameInitial']}. {x['internationalFamilyName']}", axis=1)
+    pbp_df.loc[pbp_df['periodType'] == "OVERTIME", 'period'] = pbp_df['period'] + 4 # make overtime periods start at 5
 
     # keep columns 1 to 17, drop all player info
     # This is what is kept ['clock', 's1', 's2', 'lead', 'tno', 'period', 'periodType', 'pno',
@@ -133,17 +134,6 @@ def get_pbp_df(data_json):
     # pbp_df['gt'] = pd.to_datetime(pbp_df['gt'], format="%M:%S").dt.time
     pbp_df['clock'] = pd.to_datetime(pbp_df['clock'], format="%M:%S:%f").dt.time
 
-    # change period id of OT
-    #TODO: why is this change to a number 5??
-    # ANSW: I get it, to be able to extract stints and go over period times 1,2,3,4,.., 5
-    # but its strange they dont change period, but the type. We will deal with both fields explicitly..
-    #periodType == 'OVERTIME'] = 5
-    pbp_df.loc[pbp_df["periodType"] == 'OVERTIME', 'periodType'] = 5
-
-    # #add teams names
-
-    # pbp$team_name = ''
-    # pbp$team_short_name = ''
     pbp_df.insert(0, 'team_name', '')
     pbp_df.insert(1, 'team_short_name', '')
     pbp_df.loc[pbp_df['tno'] == 1, 'team_name'] = team_name_1
@@ -208,14 +198,13 @@ def pbp_stints_extract(pbp_df : pd.DataFrame, starter_team: set, team_no: int) -
     current_team = starter_team # lineup start
     current_team = frozenset(current_team)
     logging.debug(f"Start computing stints for team {team_no} with starters: {current_team}")
-    for period in range(1, 5):
-        prev_clock = datetime.time.fromisoformat('00:10:00.000000')
-        prev_clock = datetime.time(hour=0, minute=10, second=0)
+
+    for period in range(0, pbp_df['period'].max()+1):
+        prev_clock = datetime.time(hour=0, minute=10 if period < 5 else 5, second=0)
         end_clock = datetime.time(hour=0, minute=0, second=0)
         subs = pbp_df.loc[(pbp_df['actionType'] == 'substitution') &    # all subs done in period
                             (pbp_df['tno'] == team_no) &
-                            (pbp_df['period'] == period) &
-                            (pbp_df['periodType'] == 'REGULAR')]
+                            (pbp_df['period'] == period)]
         for sub_clock in list(subs['clock'].unique()) + [end_clock]: # loo on the sub times for the team
             # interval = pd.Interval(datetime.datetime.timestamp(prev_clock), datetime.datetime.timestamp(sub_clock), closed='left')
             interval = (period, prev_clock, sub_clock)
@@ -315,8 +304,8 @@ def pbp_add_stint_col(pbp_df: pd.DataFrame, stints: dict, stint_col: str) -> tup
     return stints_df, pbp2_df
 
 
-
-
+def get_overtimes(pbp_df: pd.DataFrame) -> list:
+    return pbp_df.loc[(pbp_df['periodType'] == "OVERTIME"), ['period', 'periodType']].drop_duplicates().to_records(index=False).tolist()
 
 # ##########################################################
 # STINT STATISTICS BUILDER
