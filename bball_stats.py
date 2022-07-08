@@ -150,7 +150,7 @@ def get_pbp_df(data_json):
     # pbp$player = gsub(', ','', pbp$player)
 
     # sort by period and clock
-    pbp_df.sort_values(by=['period', 'clock'], ascending=[True, False], inplace=True)
+    pbp_df.sort_values(by=['period', 'clock', 'actionNumber'], ascending=[True, False, True], inplace=True)
 
     logging.debug(f"PBP df extracted for game {team_name_1} ({team_short_name_1}) vs {team_name_2} ({team_short_name_2})")
 
@@ -206,6 +206,13 @@ def pbp_stints_extract(pbp_df : pd.DataFrame, starter_team: set, team_no: int) -
         subs = pbp_df.loc[(pbp_df['actionType'] == 'substitution') &    # all subs done in period
                             (pbp_df['tno'] == team_no) &
                             (pbp_df['period'] == period)]
+        # keep the last sub of a player that appears more than once in one clock
+        # very strange, but it happens. THere could be odd or even number of rep per player!
+        #   1976446: OVERTIME 17.80secs - player McVeigh comes in, makes 3pt, and gets out. no time passes! :-)
+        #   2004608: Period 2 05.600 - B. Kuol (team 2) come out, but then in and out
+        subs = subs.drop_duplicates(subset=['clock', 'player'], keep='last')
+
+
         for sub_clock in list(subs['clock'].unique()) + [end_clock]: # loop on the sub times for the team
             # interval = pd.Interval(datetime.datetime.timestamp(prev_clock), datetime.datetime.timestamp(sub_clock), closed='left')
             interval = (period, prev_clock, sub_clock)
@@ -214,18 +221,17 @@ def pbp_stints_extract(pbp_df : pd.DataFrame, starter_team: set, team_no: int) -
             else:
                 stints[current_team] = [interval]   # new stint found!
 
-
             players_in = set(subs.loc[(subs['clock'] == sub_clock) &
                                     (subs['subType'] == 'in'), 'player'].tolist())
             players_out = set(subs.loc[(subs['clock'] == sub_clock) &
                                     (subs['subType'] == 'out'), 'player'].tolist())
 
-            # remove players that have been swapped in and out at the same time
-            # very strange, but it happens. check OVERTIME 17.80secs on game 1976446
-            #   player McVeigh comes in, makes 3pt, and gets out. no time passes! :-)
-            phantom_players = players_in.intersection(players_out)
-            players_in = players_in.difference(phantom_players)
-            players_out = players_out.difference(phantom_players)
+            # # remove players that have been swapped in and out at the same time
+            # # very strange, but it happens. check OVERTIME 17.80secs on game 1976446
+            # #   player McVeigh comes in, makes 3pt, and gets out. no time passes! :-)
+            # phantom_players = players_in.intersection(players_out)
+            # players_in = players_in.difference(phantom_players)
+            # players_out = players_out.difference(phantom_players)
 
             logging.debug(f"=====> Substitution period {period} at time: {sub_clock}")
             logging.debug(f"Players out: {players_out}")
@@ -253,11 +259,13 @@ def pbp_get_ranges_mask(pbp_df: pd.DataFrame, time_intervals: list) -> pd.Series
 
     mask = pd.Series([False]*pbp_df.shape[0]) # initial mask: all selected!
     for interval in time_intervals:
+        # e.g., [(4, datetime.time(0, 8), datetime.time(0, 5, 50))]
+        #   period 4, from 08:00 left to 05:50 left
         period, end, start = interval
         # print(f"Period {period} between {start} and {end}")
 
         mask2 = (pbp_df['period'] == period)
-        mask2 = mask2 & (pbp_df['clock'] > start) & (pbp_df['clock'] <= end)
+        mask2 = mask2 & (pbp_df['clock'] >= start) & (pbp_df['clock'] < end)
 
         mask = (mask) | (mask2)
 
@@ -544,7 +552,7 @@ def build_game_stints_stats_df(game_id : int) -> dict:
     team_name_col = stats_df.pop('team')
     stats_df.insert(1, "team", team_name_col)
 
-    # 10. Build result dictionary
+    # 10. Build result dictionaryunique
     result = {}
     result["pbp_df"] = pbp_df
     result["team1"] = (team_name_1, score_1)
