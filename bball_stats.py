@@ -27,7 +27,7 @@ from functools import reduce
 import logging
 
 LOGGING_LEVEL = 'INFO'
-LOGGING_LEVEL = 'DEBUG'
+# LOGGING_LEVEL = 'DEBUG'
 
 LOGGING_FMT = '%(asctime)s %(levelname)s %(message)s'
 
@@ -195,29 +195,38 @@ def pbp_stints_extract(pbp_df : pd.DataFrame, starter_team: set, team_no: int) -
     """
     stints = {} # here we will collect the result as a dictionary!
 
-    current_team = starter_team # lineup start
+    # start with the starting lineup of the team
+    current_team = starter_team 
     current_team = frozenset(current_team)
     logging.debug(f"Start computing stints for team {team_no} with starters: {current_team}")
 
-    for period in range(0, pbp_df['period'].max()+1):
+    for period in range(1, pbp_df['period'].max()+1):
         prev_clock = datetime.time(hour=0, minute=10 if period < 5 else 5, second=0)
         end_clock = datetime.time(hour=0, minute=0, second=0)
         subs = pbp_df.loc[(pbp_df['actionType'] == 'substitution') &    # all subs done in period
                             (pbp_df['tno'] == team_no) &
                             (pbp_df['period'] == period)]
-        for sub_clock in list(subs['clock'].unique()) + [end_clock]: # loo on the sub times for the team
+        for sub_clock in list(subs['clock'].unique()) + [end_clock]: # loop on the sub times for the team
             # interval = pd.Interval(datetime.datetime.timestamp(prev_clock), datetime.datetime.timestamp(sub_clock), closed='left')
             interval = (period, prev_clock, sub_clock)
             if current_team in stints:
-                stints[current_team].append(interval)
+                stints[current_team].append(interval)   # append intervals of existing stint
             else:
-                stints[current_team] = [interval]
+                stints[current_team] = [interval]   # new stint found!
 
 
             players_in = set(subs.loc[(subs['clock'] == sub_clock) &
                                     (subs['subType'] == 'in'), 'player'].tolist())
             players_out = set(subs.loc[(subs['clock'] == sub_clock) &
                                     (subs['subType'] == 'out'), 'player'].tolist())
+
+            # remove players that have been swapped in and out at the same time
+            # very strange, but it happens. check OVERTIME 17.80secs on game 1976446
+            #   player McVeigh comes in, makes 3pt, and gets out. no time passes! :-)
+            phantom_players = players_in.intersection(players_out)
+            players_in = players_in.difference(phantom_players)
+            players_out = players_out.difference(phantom_players)
+
             logging.debug(f"=====> Substitution period {period} at time: {sub_clock}")
             logging.debug(f"Players out: {players_out}")
             logging.debug(f"Players in: {players_in}")
