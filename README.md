@@ -115,7 +115,7 @@ https://www.basketball-reference.com/players/a/antetgi01/lineups/2016
 
 ### Data visualization
 
-* [Public Tableau](https://public.tableau.com) can be used to visualize the data produced by this system, for example https://public.tableau.com/app/profile/john5460/viz/NBL2021-22/CompareOnOff?publish=yes.
+* [Public Tableau](https://public.tableau.com) can be used to visualize the data produced by this system, for example [here](https://public.tableau.com/app/profile/john5460/viz/NBL2021-22/CompareOnOff?publish=yes)
 * Special graphs and charts can be done using [seaborn](https://seaborn.pydata.org/) and [matplotlib](https://matplotlib.org/). **[INCOMPLETE - TO DEVELOP]**
 
 ## 4. API Services
@@ -129,7 +129,7 @@ https://www.basketball-reference.com/players/a/antetgi01/lineups/2016
 
 ### Other APIs and pages
 
-- Game information page: https://fibalivestats.dcd.shared.geniussports.com/u/NBL/\<GAME_ID\>
+- Game information page: https://fibalivestats.dcd.shared.geniussports.com/u/NBL/<GAME_ID\>
 - [NBL Game Fixture](https://nbl.com.au/fixture).
 - [FIBA LiveStats V7](http://www.fibaorganizer.com/): a notebook-based software application to record basketball game statistics and webcast games in real time.
 - [Best API](https://betsapi.com/l/1714/Australia-NBL): paid RESTful API.
