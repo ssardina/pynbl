@@ -30,13 +30,14 @@ LOGGING_LEVEL = 'INFO'
 # LOGGING_LEVEL = 'DEBUG'
 
 LOGGING_FMT = '%(asctime)s %(levelname)s %(message)s'
+LOGGING_FMT_DEBUG = "[%(asctime)s %(filename)s->%(funcName)s():%(lineno)s]%(levelname)s: %(message)s"
 
 import coloredlogs
 # Set format and level of debug
 coloredlogs.install(level=LOGGING_LEVEL, fmt=LOGGING_FMT)
 
 def set_logging(level):
-    coloredlogs.install(level=level, fmt=LOGGING_FMT)
+    coloredlogs.install(level=level, fmt=LOGGING_FMT_DEBUG if level == "DEBUG" else LOGGING_FMT)
 
 
 ##########################################################
@@ -207,7 +208,7 @@ def pbp_stints_extract(pbp_df : pd.DataFrame, starter_team: set, team_no: int) -
                             (pbp_df['tno'] == team_no) &
                             (pbp_df['period'] == period)]
         # keep the last sub of a player that appears more than once in one clock
-        # very strange, but it happens. THere could be odd or even number of rep per player!
+        # very strange, but it happens. There could be odd or even number of rep per player!
         #   1976446: OVERTIME 17.80secs - player McVeigh comes in, makes 3pt, and gets out. no time passes! :-)
         #   2004608: Period 2 05.600 - B. Kuol (team 2) come out, but then in and out
         subs = subs.drop_duplicates(subset=['clock', 'player'], keep='last')
@@ -220,11 +221,17 @@ def pbp_stints_extract(pbp_df : pd.DataFrame, starter_team: set, team_no: int) -
                 stints[current_team].append(interval)   # append intervals of existing stint
             else:
                 stints[current_team] = [interval]   # new stint found!
+                logging.debug(f"New stint found: {current_team}")
 
             players_in = set(subs.loc[(subs['clock'] == sub_clock) &
                                     (subs['subType'] == 'in'), 'player'].tolist())
             players_out = set(subs.loc[(subs['clock'] == sub_clock) &
                                     (subs['subType'] == 'out'), 'player'].tolist())
+
+            if players_in.intersection(current_team):
+                logging.warning(f"Sub team {team_no} at {sub_clock}: incoming players already in court: {players_in.intersection(current_team)}")
+            if players_out and not players_out.intersection(current_team) :
+                logging.warning(f"Sub team {team_no} at {sub_clock}: outcoming players not in court: {players_out.difference(current_team)}")
 
             # # remove players that have been swapped in and out at the same time
             # # very strange, but it happens. check OVERTIME 17.80secs on game 1976446
@@ -242,6 +249,8 @@ def pbp_stints_extract(pbp_df : pd.DataFrame, starter_team: set, team_no: int) -
 
             # reset prev clock for next subs
             prev_clock = sub_clock
+
+    logging.debug(f"Number of sints extracted for team {team_no}: {len(stints)}")
 
     return stints
 
@@ -499,6 +508,7 @@ def build_game_stints_stats_df(game_id : int) -> dict:
     # 1. Read game JSON file
     game_json = tools.get_json_data(game_id)
     pbp_df = get_pbp_df(game_json)
+    logging.debug(f"Extacting stint stats for game {game_id} - PBP df computed with shape: {pbp_df.shape}.")
 
     # 2. Extract names of teams in the game and scores
     team_names = get_team_names(game_json)
@@ -513,26 +523,33 @@ def build_game_stints_stats_df(game_id : int) -> dict:
     # 3. Compute stints for each team
     starters_1 = get_starters(game_json, 1)
     starters_2 = get_starters(game_json, 2)
+    logging.debug(f"Starters for each team computed: {starters_1} / {starters_2}")
     # for x in zip([team_name_1, team_name_2], [starters_1, starters_2]):
     #     print(f"Starters for {x[0]}: {x[1]}")
 
     stints_1 = pbp_stints_extract(pbp_df, starters_1, 1)
     stints_2 = pbp_stints_extract(pbp_df, starters_2, 2)
+    logging.debug(f"Stints for each team computed: {len(stints_1)} / {len(stints_2)}")
+
 
     # 4. Add stint info to pbp df
-    stints1_df, pbp_aux_df = pbp_add_stint_col(pbp_df, stints_1, "stint1")
-    stints2_df, pbp_aux_df = pbp_add_stint_col(pbp_aux_df, stints_2, "stint2")
+    stints1_df, pbp_df = pbp_add_stint_col(pbp_df, stints_1, "stint1")
+    stints2_df, pbp_df = pbp_add_stint_col(pbp_df, stints_2, "stint2")
+    logging.debug(f"Stints columns added to pbp df for both teams")
+
 
     # 5. Drop plays that are not for statistics (game events, like start/end)
-    pbp_df = pbp_aux_df.loc[(~pbp_aux_df['actionType'].isin(ACT_NON_STATS))]
-    pbp_df = pbp_df.loc[(~pbp_aux_df['subType'].isin(ACTSSUB_NON_STATS))]
-    pbp_df.reset_index(inplace=True, drop=True)     # re-index as we may have dropped rows
+    # Why do we drop plays? Just leave them, who cares..
+    # pbp_df = pbp_df.loc[(~pbp_df['actionType'].isin(ACT_NON_STATS))]
+    # pbp_df = pbp_df.loc[(~pbp_df['subType'].isin(ACTSSUB_NON_STATS))]
+    # pbp_df.reset_index(inplace=True, drop=True)     # re-index as we may have dropped rows
 
     # 6. BUILD STATS: build stint stats for each team
     stats1_df = build_team_stint_stats_df(pbp_df, 1, "stint1")
     stats2_df = build_team_stint_stats_df(pbp_df, 2, "stint2")
     stats_df = pd.concat([stats1_df, stats2_df])
     stats_df.reset_index(inplace=True, drop=True)
+    logging.debug(f"Stats df computed for both teams")
 
     # 7. Reorder columns
     index_col = ['tno', 'stint']
