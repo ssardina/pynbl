@@ -140,4 +140,6 @@ https://www.basketball-reference.com/players/a/antetgi01/lineups/2016
 
 ## Contact & Contributions
 
-System developed by Sebastian Sardina (ssardina@gmail.com, [ssardina @ GitHub](https://github.com/ssardina)) with support from [jgalowe @ GitHub](https://github.com/jgalowe). Based on [euRobasketAu](https://github.com/jgalowe/euRobasketAu?organization=jgalowe&organization=jgalowe) R-based scripts.
+Developed by Sebastian Sardina (ssardina@gmail.com, [ssardina @ GitHub](https://github.com/ssardina)) with support from [jgalowe @ GitHub](https://github.com/jgalowe). 
+
+Based on [euRobasketAu](https://github.com/jgalowe/euRobasketAu?organization=jgalowe&organization=jgalowe) R-based scripts.
