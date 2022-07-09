@@ -1,4 +1,4 @@
-# Py-nbl-stats: Python AUS Bball Statistic System
+# Pynbl: Python AUS Bball Statistic System
 
 The scripts and notebooks in this repo allows to extract information and statistics from Basketball game data provided by [fibalivestats](http://www.fibaorganizer.com/) for the [NBL Australian Basketball](https://nbl.com.au/) competition. It is similar in functionality and is inspired in R-based system [euRobasketAu](https://github.com/jgalowe/euRobasketAu?organization=jgalowe&organization=jgalowe).
 
