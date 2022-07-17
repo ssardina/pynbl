@@ -9,6 +9,8 @@ ACT_NON_STATS = ['period', 'game', 'substitution']
 ACTSSUB_NON_STATS = ['startperiod']
 
 
+SHOOTS_TYPES = ["3pt", "2pt", "freethrow"]
+
 ######################################
 # STAT FIELDS USED AND COLUMN ORDER
 ######################################
