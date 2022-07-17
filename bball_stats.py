@@ -396,7 +396,6 @@ def build_stats_df(pbp_df: pd.DataFrame, tno: int, agg_col = (lambda x: True)) -
             name_p = f'{name}p'
 
             # df with the count no of plays that stat shows up (e.g., 2pt_fga) via the stat's mask
-            # 
             df = pbp_df.loc[mask].groupby(agg_col).size().reset_index(name=name_a)
 
             if rate:    # if the stat also has rate stats (e.g, shots made), then compute them
@@ -545,8 +544,12 @@ def build_game_stints_stats_df(game_id : int) -> dict:
     # pbp_df.reset_index(inplace=True, drop=True)     # re-index as we may have dropped rows
 
     # 6. BUILD STATS: build stint stats for each team
-    stats1_df = build_stats_df(pbp_df, 1, "stint1")
-    stats2_df = build_stats_df(pbp_df, 2, "stint2")
+    stats1_df = build_stats_df(pbp_df, 1, "stint1") # full stats for team 1
+    stats2_df = build_stats_df(pbp_df, 2, "stint2") # full stats for team 2
+
+    stats1_df.rename(columns={'stint1' : 'stint'}, inplace=True)    # uniform stint col
+    stats2_df.rename(columns={'stint2' : 'stint'}, inplace=True)
+
     stats_df = pd.concat([stats1_df, stats2_df])
     stats_df.reset_index(inplace=True, drop=True)
     logging.debug(f"Stats df computed for both teams")
