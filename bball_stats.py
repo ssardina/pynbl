@@ -311,20 +311,24 @@ def pbp_add_stint_col(pbp_df: pd.DataFrame, stints: dict, stint_col: str) -> tup
     pbp2_df[stint_col] = -1  # integer columns cannot store NaN, so we use -1 (no stint)
     pbp2_df.astype({stint_col: 'int32'})
 
-    # build dataframe with teams and id
-    stints_df = pd.DataFrame({'id': pd.Series(dtype='int'),
-                   'lineup': pd.Series(dtype='object'),
-                   'intervals': pd.Series(dtype='object')
-                   })
+    # fill col sint_col in php2_df with stint number and build stint data for df
+    stints_rows = []
     for lineup in enumerate(stints, start=1):
         row = {'id' : lineup[0], 'lineup' : sorted(lineup[1]), 'intervals' : stints[lineup[1]]}
-        stints_df = stints_df.append(row, ignore_index=True)
+        stints_rows.append(row)
 
         # add column with stint id
         intervals_team = stints[lineup[1]]
         mask = pbp_get_ranges_mask(pbp_df, intervals_team)
         pbp2_df.loc[mask, stint_col] = lineup[0]
 
+    # now build the stint df from rows
+    # stints_df = pd.DataFrame({'id': pd.Series(dtype='int'),
+    #                'lineup': pd.Series(dtype='object'),
+    #                'intervals': pd.Series(dtype='object')
+    #                })
+    stints_df = pd.DataFrame(stints_rows)
+    # stints_df = stints_df.append(row, ignore_index=True)
     stints_df['mins'] = stints_df['intervals'].apply(tools.intervals_to_mins)
 
     return stints_df, pbp2_df
@@ -571,12 +575,12 @@ def build_game_stints_stats_df(game_id : int) -> dict:
 
     # 10. Build result dictionaryunique
     result = {}
+    result["id"] = game_id
+    result["json_data"] = game_json
     result["pbp_df"] = pbp_df
-    result["team1"] = (team_name_1, score_1)
-    result["team2"] = (team_name_2, score_2)
+    result["teams"] = [(team_name_1, score_1), (team_name_2, score_2)]
     result["stint_stats_df"] = stats_df
-    result['stints1_df'] = stints1_df
-    result['stints2_df'] = stints2_df
+    result['stints_df'] = stints_df
 
     return result
 
