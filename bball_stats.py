@@ -340,26 +340,26 @@ def get_overtimes(pbp_df: pd.DataFrame) -> list:
 # ##########################################################
 # STINT STATISTICS BUILDER
 # ##########################################################
-def build_team_stint_stats_df(pbp_df: pd.DataFrame, tno: int, stint_col: str) -> pd.DataFrame:
+def build_stats_df(pbp_df: pd.DataFrame, tno: int, agg_col = (lambda x: True)) -> pd.DataFrame:
     """Build a dataframe with full statistics for a team
 
     Args:
         pbp_df (pd.DataFrame): play-by-play data for a game
-        tno (int): team number to extract stint stats
-        stint_col (str): the stint column to group by
+        tno (int): team number to extract stats for
+        agg_col (str): the column to group by (if any)
 
     Returns:
         pd.DataFrame: _description_
     """
-    def build_stint_basic_stats(pbp_df: pd.DataFrame, agg_col = (lambda x: True)) -> pd.DataFrame:
-        """Builds stats table aggregated by column col_name (usually, a stint column, with stint id for a team)
+    def build_core_stats(pbp_df: pd.DataFrame, agg_col = (lambda x: True)) -> pd.DataFrame:
+        """Build the core stats table aggregated by column agg_col (usually, a stint column, with stint id for a team)
 
         Args:
-            pbp_df (pd.DataFrame): a play-by-play table with a column called col_name
+            pbp_df (pd.DataFrame): a play-by-play table with a column called agg_col
             agg_col (str): the column to aggregate data (e.g., stints of a team), if any
 
         Returns:
-            pd.DataFrame: a table with various stats for each value in col_name
+            pd.DataFrame: a table with various stats for each value in agg_col
         """
 
         # tuples (name, default value, True if attemps/made/per, mask)
@@ -456,49 +456,44 @@ def build_team_stint_stats_df(pbp_df: pd.DataFrame, tno: int, stint_col: str) ->
     ##############################################
     # Compute stint stat data for the team tno
     ##############################################
-    # 1. basic stats for team's plays
-    stint_team_stats_df = build_stint_basic_stats(pbp_df.loc[pbp_df['tno'] == tno], stint_col)
-    stint_team_stats_df.rename(columns={stint_col : 'stint'}, inplace=True)
-    stint_team_stats_df.insert(0, 'tno', tno)
-
-    # 2. basic stats for opponents' plays
-    stint_opp_stats_df = build_stint_basic_stats(pbp_df.loc[pbp_df['tno'] == (2 if tno == 1 else 1)], stint_col)
-    stint_opp_stats_df.rename(columns={stint_col : 'stint'}, inplace=True)
-    stint_opp_stats_df.insert(0, 'tno', tno)
-    stint_opp_stats_df
+    # 1. compute core stats for team and its opponent
+    team_core_stats_df = build_core_stats(pbp_df.loc[pbp_df['tno'] == tno], agg_col)
+    opp_core_stats_df = build_core_stats(pbp_df.loc[pbp_df['tno'] == (2 if tno == 1 else 1)], agg_col)
 
     # 3. put both stats together (opponent columns get "_opp" suffix)
-    stint_stats_df = stint_team_stats_df.merge(stint_opp_stats_df, how='left', on=['tno', 'stint'], suffixes = ("", "_opp"))
+    #   we need this to calculate next set of stats that need both core stats
+    stats_df = team_core_stats_df.merge(opp_core_stats_df, how='left', on=agg_col, suffixes = ("", "_opp"))
+    stats_df.insert(0, 'tno', tno)    # these stats are for team tno
 
     # 4. calculate stats that need both team and opp stats
     # for the team
-    stint_stats_df[F_DRTG] = tools.percent(stint_stats_df[f'{F_PTS}_opp'], stint_stats_df[f'{F_POSS}_opp']) # drtg = defensive rating
-    stint_stats_df[F_NRTG] = stint_stats_df[F_ORTG] - stint_stats_df[F_DRTG]    # net rating: offensive rating - defensive rating
+    stats_df[F_DRTG] = tools.percent(stats_df[f'{F_PTS}_opp'], stats_df[f'{F_POSS}_opp']) # drtg = defensive rating
+    stats_df[F_NRTG] = stats_df[F_ORTG] - stats_df[F_DRTG]    # net rating: offensive rating - defensive rating
 
-    stint_stats_df[F_DREBP] = tools.percent(stint_stats_df[F_DREB], stint_stats_df[F_DREB] + stint_stats_df[f'{F_OREB}_opp'])
-    stint_stats_df[F_OREBP] = tools.percent(stint_stats_df[F_OREB], stint_stats_df[F_OREB] + stint_stats_df[f'{F_DREB}_opp'])
-    stint_stats_df[F_TRBR] = tools.percent(stint_stats_df[F_TRB],
-                                    stint_stats_df[F_OREB] +
-                                    stint_stats_df[F_DREB] +
-                                    stint_stats_df[f'{F_OREB}_opp'] +
-                                    stint_stats_df[f'{F_DREB}_opp'])
-    stint_stats_df[F_OPPFGABLK] = tools.percent(stint_stats_df[F_BLK], stint_stats_df[f'{F_FGA}_opp'])
+    stats_df[F_DREBP] = tools.percent(stats_df[F_DREB], stats_df[F_DREB] + stats_df[f'{F_OREB}_opp'])
+    stats_df[F_OREBP] = tools.percent(stats_df[F_OREB], stats_df[F_OREB] + stats_df[f'{F_DREB}_opp'])
+    stats_df[F_TRBR] = tools.percent(stats_df[F_TRB],
+                                    stats_df[F_OREB] +
+                                    stats_df[F_DREB] +
+                                    stats_df[f'{F_OREB}_opp'] +
+                                    stats_df[f'{F_DREB}_opp'])
+    stats_df[F_OPPFGABLK] = tools.percent(stats_df[F_BLK], stats_df[f'{F_FGA}_opp'])
 
     # # for the opponent (same stats as team)
-    stint_stats_df[f'{F_DRTG}_opp'] = tools.percent(stint_stats_df[F_PTS], stint_stats_df[F_POSS])
-    stint_stats_df[f'{F_NRTG}_opp'] = stint_stats_df[f'{F_ORTG}_opp'] - stint_stats_df[f'{F_DRTG}_opp']
+    stats_df[f'{F_DRTG}_opp'] = tools.percent(stats_df[F_PTS], stats_df[F_POSS])
+    stats_df[f'{F_NRTG}_opp'] = stats_df[f'{F_ORTG}_opp'] - stats_df[f'{F_DRTG}_opp']
 
-    stint_stats_df[f'{F_DREBP}_opp'] = tools.percent(stint_stats_df[f'{F_DREB}_opp'], stint_stats_df[f'{F_DREB}_opp'] + stint_stats_df[F_OREB])
-    stint_stats_df[f'{F_OREBP}_opp'] = tools.percent(stint_stats_df[f'{F_OREB}_opp'], stint_stats_df[f'{F_OREB}_opp'] + stint_stats_df[F_DREB])
-    stint_stats_df[f'{F_TRBR}_opp'] = tools.percent(stint_stats_df[f'{F_TRB}_opp'],
-                                    stint_stats_df[f'{F_OREB}_opp'] +
-                                    stint_stats_df[f'{F_DREB}_opp'] +
-                                    stint_stats_df[F_OREB] +
-                                    stint_stats_df[F_DREB])
-    stint_stats_df[f'{F_OPPFGABLK}_opp'] = tools.percent(stint_stats_df[f'{F_BLK}_opp'], stint_stats_df[F_FGA])
+    stats_df[f'{F_DREBP}_opp'] = tools.percent(stats_df[f'{F_DREB}_opp'], stats_df[f'{F_DREB}_opp'] + stats_df[F_OREB])
+    stats_df[f'{F_OREBP}_opp'] = tools.percent(stats_df[f'{F_OREB}_opp'], stats_df[f'{F_OREB}_opp'] + stats_df[F_DREB])
+    stats_df[f'{F_TRBR}_opp'] = tools.percent(stats_df[f'{F_TRB}_opp'],
+                                    stats_df[f'{F_OREB}_opp'] +
+                                    stats_df[f'{F_DREB}_opp'] +
+                                    stats_df[F_OREB] +
+                                    stats_df[F_DREB])
+    stats_df[f'{F_OPPFGABLK}_opp'] = tools.percent(stats_df[f'{F_BLK}_opp'], stats_df[F_FGA])
 
 
-    return stint_stats_df
+    return stats_df
 
 
 def build_game_stints_stats_df(game_id : int) -> dict:
@@ -517,8 +512,8 @@ def build_game_stints_stats_df(game_id : int) -> dict:
 
     # 2. Extract names of teams in the game and scores
     team_names = get_team_names(game_json)
-    team_name_1, team_short_name_1 = team_names[0]
-    team_name_2, team_short_name_2 = team_names[1]
+    team_name_1, _ = team_names[0]
+    team_name_2, _ = team_names[1]
 
     score_1, score_2 = get_team_scores(game_json)
 
@@ -550,8 +545,8 @@ def build_game_stints_stats_df(game_id : int) -> dict:
     # pbp_df.reset_index(inplace=True, drop=True)     # re-index as we may have dropped rows
 
     # 6. BUILD STATS: build stint stats for each team
-    stats1_df = build_team_stint_stats_df(pbp_df, 1, "stint1")
-    stats2_df = build_team_stint_stats_df(pbp_df, 2, "stint2")
+    stats1_df = build_stats_df(pbp_df, 1, "stint1")
+    stats2_df = build_stats_df(pbp_df, 2, "stint2")
     stats_df = pd.concat([stats1_df, stats2_df])
     stats_df.reset_index(inplace=True, drop=True)
     logging.debug(f"Stats df computed for both teams")
