@@ -229,9 +229,9 @@ def pbp_stints_extract(pbp_df : pd.DataFrame, starter_team: set, team_no: int) -
                                     (subs['subType'] == 'out'), 'player'].tolist())
 
             if players_in.intersection(current_team):
-                logging.warning(f"Sub team {team_no} at {sub_clock}: incoming players already in court: {players_in.intersection(current_team)}")
+                logging.warning(f"Sub team {team_no} at {sub_clock} in period {period}: incoming players already in court: {players_in.intersection(current_team)}")
             if players_out and not players_out.intersection(current_team) :
-                logging.warning(f"Sub team {team_no} at {sub_clock}: outcoming players not in court: {players_out.difference(current_team)}")
+                logging.warning(f"Sub team {team_no} at {sub_clock} in period {period}: outcoming players not in court: {players_out.difference(current_team)}")
 
             # # remove players that have been swapped in and out at the same time
             # # very strange, but it happens. check OVERTIME 17.80secs on game 1976446
@@ -507,7 +507,7 @@ def build_game_stints_stats_df(game_id : int) -> dict:
         game_id (int): the id of the game
 
     Returns:
-        dict: contains stint statistic and pbp dataframes, and team info
+        dict: contains various data and df for the game (including pbp and stint stats dfs)
     """
     # 1. Read game JSON file
     game_json = tools.get_json_data(game_id)
