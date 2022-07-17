@@ -351,12 +351,12 @@ def build_team_stint_stats_df(pbp_df: pd.DataFrame, tno: int, stint_col: str) ->
     Returns:
         pd.DataFrame: _description_
     """
-    def build_stint_basic_stats(pbp_df: pd.DataFrame, col_name: str) -> pd.DataFrame:
+    def build_stint_basic_stats(pbp_df: pd.DataFrame, agg_col = (lambda x: True)) -> pd.DataFrame:
         """Builds stats table aggregated by column col_name (usually, a stint column, with stint id for a team)
 
         Args:
             pbp_df (pd.DataFrame): a play-by-play table with a column called col_name
-            col_name (str): the column to aggregate data (e.g., stints of a team)
+            agg_col (str): the column to aggregate data (e.g., stints of a team), if any
 
         Returns:
             pd.DataFrame: a table with various stats for each value in col_name
@@ -387,7 +387,7 @@ def build_team_stint_stats_df(pbp_df: pd.DataFrame, tno: int, stint_col: str) ->
                 (F_24SEC, 0, False, (pbp_df['actionType'] == 'turnover') & (pbp_df['subType'] == '24sec') )
         ]
         # start with a dummy df for full left join with one row per stint number: 1,2,3,...,N
-        stats_dfs = [pd.DataFrame({col_name : pbp_df[col_name].unique()})] 
+        stats_dfs = [pd.DataFrame({agg_col : pbp_df[agg_col].unique()})] 
 
         for stat in stats:  # for each stat, compute a dataframe df (and add it to stats_dfs)
             name, default, rate, mask = stat
@@ -395,11 +395,12 @@ def build_team_stint_stats_df(pbp_df: pd.DataFrame, tno: int, stint_col: str) ->
             name_m = f'{name}m'
             name_p = f'{name}p'
 
-            # count no of plays that stat shows up (e.g., 2pt_fga) via the stat's mask
-            df = pbp_df.loc[mask].groupby(col_name).size().reset_index(name=name_a)
+            # df with the count no of plays that stat shows up (e.g., 2pt_fga) via the stat's mask
+            # 
+            df = pbp_df.loc[mask].groupby(agg_col).size().reset_index(name=name_a)
 
-            if rate:
-                df2 = pbp_df.loc[mask & (pbp_df['success'] == 1)].groupby(col_name).size().reset_index(name=name_m)
+            if rate:    # if the stat also has rate stats (e.g, shots made), then compute them
+                df2 = pbp_df.loc[mask & (pbp_df['success'] == 1)].groupby(agg_col).size().reset_index(name=name_m)
                 df2.fillna(default, inplace=True)
 
                 df = df.merge(df2, "left")
