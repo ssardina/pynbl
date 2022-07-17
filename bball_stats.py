@@ -388,8 +388,8 @@ def build_team_stint_stats_df(pbp_df: pd.DataFrame, tno: int, stint_col: str) ->
         ]
         # start with a dummy df for full left join with one row per stint number: 1,2,3,...,N
         stats_dfs = [pd.DataFrame({col_name : pbp_df[col_name].unique()})] 
-        # compute a dataframe (and add it to stats_dfs) for each stat
-        for stat in stats:
+
+        for stat in stats:  # for each stat, compute a dataframe df (and add it to stats_dfs)
             name, default, rate, mask = stat
             name_a = f'{name}a' if rate else name
             name_m = f'{name}m'
@@ -427,7 +427,7 @@ def build_team_stint_stats_df(pbp_df: pd.DataFrame, tno: int, stint_col: str) ->
         df[F_POSS] = df[F_2PTFGA] + df[F_3PTFGA] + 0.44*df[F_FTA] + df[F_TOV] - df[F_OREB]
         df.loc[df[F_POSS] < 0, 'poss'] = 0
 
-        # calculate ortg
+        # calculate offensive rating
         df[F_ORTG] = tools.percent(df[F_PTS], df[F_POSS])
 
         # playmaking stats
@@ -472,7 +472,7 @@ def build_team_stint_stats_df(pbp_df: pd.DataFrame, tno: int, stint_col: str) ->
     # 4. calculate stats that need both team and opp stats
     # for the team
     stint_stats_df[F_DRTG] = tools.percent(stint_stats_df[f'{F_PTS}_opp'], stint_stats_df[f'{F_POSS}_opp']) # drtg = defensive rating
-    stint_stats_df[F_NRTG] = stint_stats_df[F_ORTG] - stint_stats_df[F_DRTG]
+    stint_stats_df[F_NRTG] = stint_stats_df[F_ORTG] - stint_stats_df[F_DRTG]    # net rating: offensive rating - defensive rating
 
     stint_stats_df[F_DREBP] = tools.percent(stint_stats_df[F_DREB], stint_stats_df[F_DREB] + stint_stats_df[f'{F_OREB}_opp'])
     stint_stats_df[F_OREBP] = tools.percent(stint_stats_df[F_OREB], stint_stats_df[F_OREB] + stint_stats_df[f'{F_DREB}_opp'])
