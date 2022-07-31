@@ -469,7 +469,9 @@ def build_stats_df(pbp_df: pd.DataFrame, tno: int, agg_col = (lambda x: True)) -
     stats_df[F_DRTG] = tools.percent(stats_df[f'{F_PTS}_opp'], stats_df[f'{F_POSS}_opp']) # drtg = defensive rating
     stats_df[F_NRTG] = stats_df[F_ORTG] - stats_df[F_DRTG]    # net rating: offensive rating - defensive rating
 
+    stats_df[F_DREBC] = stats_df[F_DREB] + stats_df[f'{F_OREB}_opp']
     stats_df[F_DREBP] = tools.percent(stats_df[F_DREB], stats_df[F_DREB] + stats_df[f'{F_OREB}_opp'])
+    stats_df[F_OREBC] = stats_df[F_OREB] + stats_df[f'{F_DREB}_opp']
     stats_df[F_OREBP] = tools.percent(stats_df[F_OREB], stats_df[F_OREB] + stats_df[f'{F_DREB}_opp'])
     stats_df[F_TRBR] = tools.percent(stats_df[F_TRB],
                                     stats_df[F_OREB] +
@@ -482,7 +484,9 @@ def build_stats_df(pbp_df: pd.DataFrame, tno: int, agg_col = (lambda x: True)) -
     stats_df[f'{F_DRTG}_opp'] = tools.percent(stats_df[F_PTS], stats_df[F_POSS])
     stats_df[f'{F_NRTG}_opp'] = stats_df[f'{F_ORTG}_opp'] - stats_df[f'{F_DRTG}_opp']
 
+    stats_df[f'{F_DREBC}_opp'] = stats_df[f'{F_DREB}_opp'] + stats_df[F_OREB]
     stats_df[f'{F_DREBP}_opp'] = tools.percent(stats_df[f'{F_DREB}_opp'], stats_df[f'{F_DREB}_opp'] + stats_df[F_OREB])
+    stats_df[f'{F_OREBC}_opp'] = stats_df[f'{F_OREB}_opp'] + stats_df[F_DREB]
     stats_df[f'{F_OREBP}_opp'] = tools.percent(stats_df[f'{F_OREB}_opp'], stats_df[f'{F_OREB}_opp'] + stats_df[F_DREB])
     stats_df[f'{F_TRBR}_opp'] = tools.percent(stats_df[f'{F_TRB}_opp'],
                                     stats_df[f'{F_OREB}_opp'] +

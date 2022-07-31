@@ -49,14 +49,18 @@ F_STLR = 'stlr'
 F_BLK = 'blk'
 F_BLKR = 'blkr'
 
+# rebounds
 F_REB = 'reb'
 F_OREB = 'oreb'
-F_ODREB= 'odreb'
+F_OREBC= 'odrec'
 F_OREBP = 'orebp'
+F_ODREB= 'odreb'
+
 F_DREB = 'dreb'
+F_DREBC = 'drebc'
 F_DREBP = 'drebp'
-F_TRB = 'trb'
-F_TRBR = 'trbr'
+F_TRB = 'trb'   # total rebounds
+F_TRBR = 'trbr' # total rebounds rate
 
 # turn-overs
 F_TOV = 'tov'
@@ -84,8 +88,8 @@ DATA_COLS = [ F_POSS, F_ORTG, F_DRTG, F_NRTG,
                 F_BLK, F_BLKR,
                 F_TOV, F_TOVR,
                 F_REB,
-                F_DREB, F_DREBP,
-                F_OREB, F_OREBP,
+                F_DREB, F_DREBC, F_DREBP,
+                F_OREB, F_OREBC, F_OREBP,
                 F_TRB,  F_TRBR,
                 # neg plays
                 F_BALLHAND, F_BADPASS,
