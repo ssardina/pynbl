@@ -1,5 +1,7 @@
 # Pynbl: Python AUS Bball Statistic System
 
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/ssardina/pynbl/HEAD)
+
 The scripts and notebooks in this repo allows to extract information and statistics from Basketball game data provided by [fibalivestats](http://www.fibaorganizer.com/) for the [NBL Australian Basketball](https://nbl.com.au/) competition. It is similar in functionality and is inspired in R-based system [euRobasketAu](https://github.com/jgalowe/euRobasketAu?organization=jgalowe&organization=jgalowe).
 
 The data is mostly provided as JSON files via a game-id number, and most of the information extracted is in the form of [Panda](https://pandas.pydata.org/) dataframes.
