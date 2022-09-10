@@ -1,8 +1,6 @@
 pandas
 numpy
 dtale
-request
-json
 functools
 datetime
 coloredlogs
