@@ -15,14 +15,7 @@ Currently, the system focuses on building _stint lineup_ statistics (but will be
 - a Pandas table with _**games' information**_ (e.g., team names, scores, date, venue, etc.).
 - a Pandas table with stats for each _**teams' stint lineup**_ (e.g., lineup of players who played together in different intervals during the game).
 
-These Pandas Dataframes can then be saved in various formats, inclding CSV and Excel.
-
-To compute the above tables, the system also extracts/computes, via various functions, the following information:
-
-- **Game information**, including teams, scores, venue, and date.
-- The **starting lineup** of a team.
-- A **table of stints** for each team containing the lineup of players of each stint, the intervals and the number of minutes the stint was on court.
-- A **play-by-play** DataFrame, with and without the stint id on each play for each team (denoting which lineups where on court at a play).
+These Pandas Dataframes can then be saved in various formats, including CSV and Excel.
 
 - [Pynbl: Python AUS Bball Statistic System](#pynbl-python-aus-bball-statistic-system)
   - [1. Pre-requisites](#1-pre-requisites)
@@ -33,11 +26,9 @@ To compute the above tables, the system also extracts/computes, via various func
     - [Main game data](#main-game-data)
     - [Date and venue information](#date-and-venue-information)
     - [Date and time formats](#date-and-time-formats)
-    - [Statistics Fields](#statistics-fields)
+    - [Auxiliary data computed/extracted](#auxiliary-data-computedextracted)
   - [Links & Resources](#links--resources)
-  - [API Services](#api-services)
-    - [Genius Sports](#genius-sports)
-    - [Other APIs and pages](#other-apis-and-pages)
+    - [API Services](#api-services)
     - [Other similar basketball stat systems/pages](#other-similar-basketball-stat-systemspages)
     - [Data visualization](#data-visualization)
   - [Contact & Contributions](#contact--contributions)
@@ -166,27 +157,23 @@ The _**game time**_ is tracked in format `MM:SS`, whereas the _**clock time**_ i
 
 When a period starts, clock is "`10:00:00`" (that is, 10 min left).
 
-### Statistics Fields
+### Auxiliary data computed/extracted
 
-Various advanced statistics are calculated from play-by-play. These are used at this point for assessing **stint lineups**, but will be extended to do On/Off, Shooting, Splits, and other interesting statistical settings.
+To compute the main tables, the system also extracts/computes, via various functions, the following information:
 
-A good example of statistic fields and settings that can be done can be found here:
-
-https://www.basketball-reference.com/players/a/antetgi01/lineups/2016
+- **Game information**, including teams, scores, venue, and date.
+- The **starting lineup** of a team.
+- A **table of stints** for each team containing the lineup of players of each stint, the intervals and the number of minutes the stint was on court.
+- A **play-by-play** DataFrame, with and without the stint id on each play for each team (denoting which lineups where on court at a play).
 
 ## Links & Resources
 
-## API Services
-
-### Genius Sports
+### API Services
 
 - [Genius Sports Developer Centre](https://developer.geniussports.com/).
     - [Genius API - Overview and Documentation](https://support.geniussports.com/en/support/solutions/articles/9000008009-api-feed-overview-and-documentation).
   - [REST API Documentation](https://developer.geniussports.com/warehouse/rest/index_basketball.html).
   - Get all matches (but requires key!): https://api.wh.geniussports.com/v1/basketball/stream/matches
-
-### Other APIs and pages
-
 - Game information page: https://fibalivestats.dcd.shared.geniussports.com/u/NBL/<GAME_ID\>
 - [NBL Game Fixture](https://nbl.com.au/fixture).
 - [FIBA LiveStats V7](http://www.fibaorganizer.com/): a notebook-based software application to record basketball game statistics and webcast games in real time.
@@ -195,7 +182,9 @@ https://www.basketball-reference.com/players/a/antetgi01/lineups/2016
 ### Other similar basketball stat systems/pages
 
 * [euRobasketAu](https://github.com/jgalowe/euRobasketAu?organization=jgalowe&organization=jgalowe): a collection of R scripts to  scrape game data from [fibalivestats](http://www.fibaorganizer.com/) and calculate _advanced stats_. It is an adaptation of a system for European leagues and the system Py-nbl-stats is inspired on.
-* [Basketball-reference.com](https://www.basketball-reference.com/players/g/ginobma01.html): here is an example of stats for each player, in this case Manu Ginobili.
+* [Basketball-reference.com](https://www.basketball-reference.com/players/g/ginobma01.html): an example of stats for each player, in this case Manu Ginobili. Can also check [Giannis Antetokounmpo](https://www.basketball-reference.com/players/a/antetgi01/lineups/2016) stats.
+
+
 * [Cleaning-the-glass](https://cleaningtheglass.com/stats/guide/player_onoff): Players on/off explained.
 
 ### Data visualization
