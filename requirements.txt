@@ -1,3 +1,4 @@
+notebook
 pandas
 numpy
 dtale
