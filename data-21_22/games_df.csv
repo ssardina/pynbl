@@ -1,0 +1,140 @@
+game_id,date,team1,team2,s1,s2,game1,round1,game2,round2,winner,venue
+1976446,2021-12-03,Tasmania JackJumpers,Brisbane Bullets,83,74,1,1,1,1,1,MyState Bank Arena
+1976447,2021-12-03,Perth Wildcats,Adelaide 36ers,85,73,1,1,1,1,1,RAC Arena
+1976448,2021-12-04,South East Melbourne Phoenix,New Zealand Breakers,89,65,1,1,1,1,1,John Cain Arena
+1976452,2021-12-05,Adelaide 36ers,Illawarra Hawks,71,81,2,1,1,1,2,Adelaide Entertainment Centre
+1976454,2021-12-05,Sydney Kings,Melbourne United,79,74,1,1,1,1,1,Qudos Bank Arena
+2004608,2021-12-05,Perth Wildcats,Cairns Taipans,90,67,2,1,1,1,1,RAC Arena
+2004609,2021-12-12,Perth Wildcats,Brisbane Bullets,94,97,3,2,2,2,2,RAC Arena
+1976449,2021-12-11,Sydney Kings,Illawarra Hawks,84,92,2,2,2,2,2,Qudos Bank Arena
+1976451,2021-12-11,Cairns Taipans,Tasmania JackJumpers,69,62,2,2,3,2,1,Cairns Convention Centre
+1976453,2021-12-12,Melbourne United,South East Melbourne Phoenix,86,94,2,2,3,2,2,John Cain Arena
+1976455,2021-12-12,Adelaide 36ers,New Zealand Breakers,98,85,4,2,3,2,1,Adelaide Entertainment Centre
+1976458,2021-12-10,South East Melbourne Phoenix,New Zealand Breakers,95,88,2,2,2,2,1,John Cain Arena
+1976456,2021-12-09,Tasmania JackJumpers,Adelaide 36ers,80,83,2,2,3,2,2,MyState Bank Arena
+1976457,2021-12-16,Melbourne United,Sydney Kings,89,47,3,3,3,3,1,John Cain Arena
+1976459,2021-12-17,Illawarra Hawks,New Zealand Breakers,97,96,3,3,4,3,1,WIN Entertainment Centre
+1976460,2021-12-17,Perth Wildcats,Brisbane Bullets,83,70,4,3,3,3,1,RAC Arena
+1976461,2021-12-18,Sydney Kings,South East Melbourne Phoenix,84,73,4,3,4,3,1,Qudos Bank Arena
+1976462,2021-12-18,Cairns Taipans,Adelaide 36ers,93,67,3,3,5,3,1,Cairns Convention Centre
+1976463,2021-12-19,Melbourne United,New Zealand Breakers,83,60,4,3,5,3,1,John Cain Arena
+1976464,2021-12-19,Brisbane Bullets,Illawarra Hawks,96,92,4,3,4,3,1,Nissan Arena
+2004610,2021-12-19,Perth Wildcats,Tasmania JackJumpers,101,83,5,3,4,3,1,RAC Arena
+1976465,2021-12-22,Sydney Kings,Tasmania JackJumpers,83,71,5,3,5,3,1,Qudos Bank Arena
+1976468,2021-12-26,Tasmania JackJumpers,New Zealand Breakers,84,75,6,4,6,4,1,MyState Bank Arena
+1976469,2021-12-26,Sydney Kings,Melbourne United,68,82,6,4,5,4,2,Qudos Bank Arena
+1976474,2022-01-01,Tasmania JackJumpers,Melbourne United,72,76,7,5,6,5,2,MyState Bank Arena
+1976473,2021-12-31,Cairns Taipans,Perth Wildcats,78,84,4,5,6,5,2,Cairns Convention Centre
+1976482,2022-01-09,Brisbane Bullets,New Zealand Breakers,83,88,5,6,7,6,2,Nissan Arena
+2036215,2022-01-13,Illawarra Hawks,Sydney Kings,97,89,5,7,7,7,1,WIN Entertainment Centre
+2031329,2022-01-14,New Zealand Breakers,Melbourne United,78,89,8,7,7,7,2,MyState Bank Arena
+2031330,2022-01-15,Brisbane Bullets,South East Melbourne Phoenix,100,84,6,7,5,7,1,Nissan Arena
+2031332,2022-01-16,Illawarra Hawks,Melbourne United,84,88,6,7,8,7,2,WIN Entertainment Centre
+2031333,2022-01-16,Sydney Kings,New Zealand Breakers,75,82,8,7,9,7,2,Qudos Bank Arena
+2031334,2022-01-18,Adelaide 36ers,Perth Wildcats,87,74,6,7,7,7,1,Adelaide Entertainment Centre
+2031335,2022-01-21,Brisbane Bullets,Sydney Kings,96,87,7,8,9,8,1,Nissan Arena
+2031336,2022-01-22,Adelaide 36ers,Melbourne United,78,97,7,8,9,8,2,Adelaide Entertainment Centre
+2031337,2022-01-22,Illawarra Hawks,Perth Wildcats,78,94,7,8,8,8,2,WIN Entertainment Centre
+2031338,2022-01-23,Sydney Kings,Brisbane Bullets,97,73,10,8,8,8,1,Qudos Bank Arena
+2031340,2022-01-23,Tasmania JackJumpers,South East Melbourne Phoenix,63,76,8,8,6,8,2,MyState Bank Arena
+2031341,2022-01-25,South East Melbourne Phoenix,Cairns Taipans,87,77,7,8,5,8,1,Gippsland Regional Indoor Sports Stadium
+2046695,2022-01-24,Illawarra Hawks,Adelaide 36ers,100,89,8,8,8,8,1,WIN Entertainment Centre
+2046696,2022-01-26,Brisbane Bullets,Melbourne United,82,84,9,8,10,8,2,Nissan Arena
+2046697,2022-01-27,Illawarra Hawks,Perth Wildcats,80,94,9,9,9,9,2,WIN Entertainment Centre
+2031342,2022-01-28,Tasmania JackJumpers,Adelaide 36ers,76,71,9,9,9,9,1,MyState Bank Arena
+2031343,2022-01-29,Cairns Taipans,Illawarra Hawks,75,94,6,9,10,9,2,Cairns Convention Centre
+2031344,2022-01-29,Brisbane Bullets,South East Melbourne Phoenix,73,88,10,9,8,9,2,Nissan Arena
+2031345,2022-01-30,Adelaide 36ers,Melbourne United,88,83,10,9,11,9,1,Adelaide Entertainment Centre
+2031346,2022-01-30,Sydney Kings,Perth Wildcats,96,81,11,9,10,9,1,Qudos Bank Arena
+2031347,2022-01-30,New Zealand Breakers,Tasmania JackJumpers,59,83,10,9,10,9,2,MyState Bank Arena
+2046698,2022-02-02,New Zealand Breakers,Illawarra Hawks,90,67,11,10,11,10,1,MyState Bank Arena
+2046700,2022-02-04,Tasmania JackJumpers,Sydney Kings,77,70,11,10,12,10,1,MyState Bank Arena
+2046701,2022-02-05,Brisbane Bullets,Cairns Taipans,94,102,11,10,7,10,2,Nissan Arena
+2046702,2022-02-05,South East Melbourne Phoenix,Perth Wildcats,79,101,9,10,11,10,2,John Cain Arena
+2046703,2022-02-06,Sydney Kings,New Zealand Breakers,84,65,13,10,12,10,1,Qudos Bank Arena
+2046704,2022-02-06,Melbourne United,Tasmania JackJumpers,85,94,12,10,12,10,2,John Cain Arena
+2046706,2022-02-07,Illawarra Hawks,South East Melbourne Phoenix,87,88,12,10,10,10,2,WIN Entertainment Centre
+2046707,2022-02-10,South East Melbourne Phoenix,Sydney Kings,87,92,11,11,14,11,2,John Cain Arena
+2046709,2022-02-11,Brisbane Bullets,Adelaide 36ers,77,73,12,11,11,11,1,Nissan Arena
+2046710,2022-02-12,Illawarra Hawks,Cairns Taipans,87,81,13,11,8,11,1,WIN Entertainment Centre
+2046711,2022-02-12,Melbourne United,Perth Wildcats,93,87,13,11,12,11,1,John Cain Arena
+2046712,2022-02-13,South East Melbourne Phoenix,Tasmania JackJumpers,83,71,12,11,13,11,1,John Cain Arena
+2046713,2022-02-13,Sydney Kings,Brisbane Bullets,71,69,15,11,13,11,1,Qudos Bank Arena
+2051763,2022-02-14,Cairns Taipans,New Zealand Breakers,83,84,9,11,13,11,2,Cairns Convention Centre
+2053811,2022-02-17,Melbourne United,South East Melbourne Phoenix,94,87,14,12,13,12,1,John Cain Arena
+2053812,2022-02-18,Illawarra Hawks,Cairns Taipans,79,54,14,12,10,12,1,WIN Entertainment Centre
+2053813,2022-02-19,South East Melbourne Phoenix,Brisbane Bullets,98,94,14,12,14,12,1,John Cain Arena
+2053814,2022-02-19,Sydney Kings,Perth Wildcats,98,95,16,12,13,12,1,Qudos Bank Arena
+2053815,2022-02-20,Adelaide 36ers,Cairns Taipans,82,71,12,12,11,12,1,Adelaide Entertainment Centre
+2053816,2022-02-20,Melbourne United,New Zealand Breakers,108,73,15,12,14,12,1,John Cain Arena
+2053817,2022-02-20,Illawarra Hawks,Tasmania JackJumpers,86,96,15,12,14,12,2,WIN Entertainment Centre
+2053818,2022-02-24,Cairns Taipans,Brisbane Bullets,73,69,12,13,14,12,1,Cairns Convention Centre
+2053819,2022-02-25,Illawarra Hawks,Adelaide 36ers,87,71,16,13,13,13,1,WIN Entertainment Centre
+2053820,2022-02-26,Brisbane Bullets,Tasmania JackJumpers,94,86,16,13,15,13,1,Nissan Arena
+2053821,2022-02-26,South East Melbourne Phoenix,Perth Wildcats,86,80,15,13,14,13,1,John Cain Arena
+2053822,2022-02-27,Adelaide 36ers,Sydney Kings,90,93,14,13,17,13,2,Adelaide Entertainment Centre
+2053823,2022-02-27,Cairns Taipans,Melbourne United,73,89,13,13,16,13,2,Cairns Convention Centre
+2053824,2022-02-28,Tasmania JackJumpers,Perth Wildcats,78,89,16,13,15,13,2,MyState Bank Arena
+2053825,2022-03-01,New Zealand Breakers,Illawarra Hawks,87,102,15,13,17,13,2,MyState Bank Arena
+2056454,2022-03-04,Adelaide 36ers,South East Melbourne Phoenix,76,83,15,14,16,14,2,Adelaide Entertainment Centre
+2056455,2022-03-05,Tasmania JackJumpers,New Zealand Breakers,66,62,17,14,16,14,1,Silverdome
+2056457,2022-03-05,Melbourne United,Brisbane Bullets,95,83,17,14,17,14,1,John Cain Arena
+2056458,2022-03-06,Adelaide 36ers,Perth Wildcats,73,92,16,14,16,14,2,Adelaide Entertainment Centre
+2056461,2022-03-06,South East Melbourne Phoenix,Illawarra Hawks,77,83,17,14,18,14,2,John Cain Arena
+2056462,2022-03-07,New Zealand Breakers,Brisbane Bullets,74,92,17,14,18,14,2,MyState Bank Arena
+2056460,2022-03-06,Sydney Kings,Cairns Taipans,98,88,18,14,14,14,1,Qudos Bank Arena
+2056463,2022-03-10,Melbourne United,Perth Wildcats,87,97,18,15,17,15,2,John Cain Arena
+2056464,2022-03-11,Cairns Taipans,Tasmania JackJumpers,69,85,15,15,18,15,2,Cairns Convention Centre
+2056466,2022-03-12,Brisbane Bullets,Perth Wildcats,83,95,19,15,18,15,2,Nissan Arena
+2056467,2022-03-12,New Zealand Breakers,Adelaide 36ers,84,75,18,15,17,15,1,Adelaide 36ers Arena
+2056469,2022-03-13,Tasmania JackJumpers,Illawarra Hawks,81,77,19,15,19,15,1,MyState Bank Arena
+2056471,2022-03-13,South East Melbourne Phoenix,Melbourne United,90,98,18,15,19,15,2,John Cain Arena
+2056472,2022-03-13,Cairns Taipans,Sydney Kings,77,86,16,15,19,15,2,Cairns Convention Centre
+2056473,2022-03-14,New Zealand Breakers,Perth Wildcats,102,104,19,15,19,15,2,MyState Bank Arena
+2065653,2022-03-17,Illawarra Hawks,South East Melbourne Phoenix,103,97,20,16,19,16,1,WIN Entertainment Centre
+2065654,2022-03-18,Adelaide 36ers,Cairns Taipans,83,57,18,16,17,16,1,Adelaide Entertainment Centre
+2065655,2022-03-19,Tasmania JackJumpers,Illawarra Hawks,65,91,20,16,21,16,2,Silverdome
+2065656,2022-03-19,South East Melbourne Phoenix,Sydney Kings,89,91,20,16,20,16,2,John Cain Arena
+2065657,2022-03-20,Melbourne United,Adelaide 36ers,101,74,21,17,19,16,1,John Cain Arena
+2065658,2022-03-20,Brisbane Bullets,Cairns Taipans,88,98,21,17,18,16,2,Nissan Arena
+2065659,2022-03-20,Perth Wildcats,New Zealand Breakers,95,85,19,17,20,16,1,RAC Arena
+2069165,2022-03-24,New Zealand Breakers,Brisbane Bullets,100,101,20,16,21,17,2,Cairns Convention Centre
+2069166,2022-03-24,Perth Wildcats,Tasmania JackJumpers,83,85,20,16,21,17,2,RAC Arena
+2069167,2022-03-25,Cairns Taipans,South East Melbourne Phoenix,74,86,20,16,21,17,2,Cairns Convention Centre
+2069168,2022-03-26,Brisbane Bullets,Tasmania JackJumpers,82,84,22,17,22,17,2,Nissan Arena
+2069169,2022-03-26,Perth Wildcats,Sydney Kings,80,102,22,17,21,17,2,RAC Arena
+2069170,2022-03-27,Adelaide 36ers,South East Melbourne Phoenix,100,92,20,17,22,17,1,Adelaide Entertainment Centre
+2069171,2022-03-27,Melbourne United,Illawarra Hawks,77,92,21,17,22,17,2,John Cain Arena
+2069172,2022-03-27,New Zealand Breakers,Cairns Taipans,90,93,22,17,20,17,2,Cairns Convention Centre
+2069175,2022-03-31,Illawarra Hawks,Brisbane Bullets,87,70,23,18,23,18,1,WIN Entertainment Centre
+2069177,2022-04-01,Adelaide 36ers,Tasmania JackJumpers,72,80,21,18,23,18,2,Adelaide Entertainment Centre
+2069179,2022-04-02,Melbourne United,Illawarra Hawks,90,96,22,18,24,18,2,John Cain Arena
+2069181,2022-04-02,Cairns Taipans,South East Melbourne Phoenix,90,85,21,18,23,18,1,Cairns Convention Centre
+2069183,2022-04-03,Tasmania JackJumpers,Sydney Kings,83,103,24,18,22,18,2,MyState Bank Arena
+2069184,2022-04-03,Brisbane Bullets,Adelaide 36ers,92,91,24,18,22,18,1,Nissan Arena
+2069186,2022-04-04,New Zealand Breakers,Cairns Taipans,77,87,24,18,22,18,2,MyState Bank Arena
+2069187,2022-04-04,Perth Wildcats,Melbourne United,75,84,23,18,23,18,2,RAC Arena
+2069191,2022-04-07,South East Melbourne Phoenix,Melbourne United,88,90,23,18,24,19,2,John Cain Arena
+2069192,2022-04-07,Perth Wildcats,New Zealand Breakers,89,80,24,19,24,19,1,RAC Arena
+2069194,2022-04-08,Tasmania JackJumpers,Cairns Taipans,87,80,24,19,23,19,1,MyState Bank Arena
+2069196,2022-04-09,Brisbane Bullets,Illawarra Hawks,77,108,25,19,25,19,2,Nissan Arena
+2069199,2022-04-09,Adelaide 36ers,Sydney Kings,77,84,25,19,23,19,2,Adelaide Entertainment Centre
+2069202,2022-04-10,New Zealand Breakers,South East Melbourne Phoenix,89,99,23,19,25,19,2,Bendigo Basketball Stadium
+2069203,2022-04-10,Cairns Taipans,Melbourne United,63,92,25,19,25,19,2,Cairns Convention Centre
+2069204,2022-04-11,Adelaide 36ers,Brisbane Bullets,85,93,24,19,26,19,2,Adelaide Entertainment Centre
+2069190,2022-04-17,Sydney Kings,Adelaide 36ers,82,90,24,19,26,20,2,Qudos Bank Arena
+2069193,2022-04-17,South East Melbourne Phoenix,Tasmania JackJumpers,80,84,26,19,27,20,2,John Cain Arena
+2069195,2022-04-16,Perth Wildcats,Cairns Taipans,106,87,26,20,25,20,1,RAC Arena
+2069197,2022-04-16,Melbourne United,Brisbane Bullets,88,79,25,20,27,20,1,John Cain Arena
+2069198,2022-04-15,New Zealand Breakers,Tasmania JackJumpers,86,88,27,20,26,20,2,MyState Bank Arena
+2069200,2022-04-14,Perth Wildcats,Adelaide 36ers,70,82,26,20,25,20,2,RAC Arena
+2069201,2022-04-14,Illawarra Hawks,Sydney Kings,102,107,26,20,25,20,2,WIN Entertainment Centre
+2069205,2022-04-12,New Zealand Breakers,Sydney Kings,70,76,26,20,24,19,2,Bendigo Basketball Stadium
+2069173,2022-04-24,Perth Wildcats,South East Melbourne Phoenix,100,102,26,20,28,21,2,RAC Arena
+2069174,2022-04-24,Sydney Kings,Illawarra Hawks,84,87,28,21,28,21,2,Qudos Bank Arena
+2069176,2022-04-24,New Zealand Breakers,Adelaide 36ers,60,93,28,21,28,21,2,MyState Bank Arena
+2069178,2022-04-23,Cairns Taipans,Brisbane Bullets,112,98,28,21,28,21,1,Cairns Convention Centre
+2069180,2022-04-23,Tasmania JackJumpers,Melbourne United,83,61,28,21,28,21,1,MyState Bank Arena
+2069182,2022-04-22,Perth Wildcats,Illawarra Hawks,77,82,28,21,27,21,2,RAC Arena
+2069188,2022-04-21,Cairns Taipans,Sydney Kings,77,87,27,21,27,21,2,Cairns Convention Centre
+2069189,2022-04-18,Melbourne United,Cairns Taipans,92,80,27,20,26,20,1,John Cain Arena

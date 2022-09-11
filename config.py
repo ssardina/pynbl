@@ -2,7 +2,7 @@ URL_LIVESTATS = 'https://livestats.dcd.shared.geniussports.com/data'
 URL_FIBA_LIVESTATS = 'http://www.fibalivestats.com/data'
 
 # where already processed data is saved
-DATA_DIR = "data/"
+DATA_DIR = "data-21_22/"
 
 # action types and subtypes that should be ignored for stats
 ACT_NON_STATS = ['period', 'game', 'substitution']
