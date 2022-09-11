@@ -305,7 +305,7 @@ def pbp_add_stint_col(pbp_df: pd.DataFrame, stints: dict, stint_col: str) -> tup
 
     Returns:
         tuple(pd.DataFrame, pd.DataFrame):
-            stint data as a dataframe + PBP df with stint id
+            stint data as a dataframe + PBP df extended with stint id in stint_col column
     """
     pbp2_df = pbp_df.copy()
     pbp2_df[stint_col] = -1  # integer columns cannot store NaN, so we use -1 (no stint)
@@ -314,6 +314,7 @@ def pbp_add_stint_col(pbp_df: pd.DataFrame, stints: dict, stint_col: str) -> tup
     # fill col sint_col in php2_df with stint number and build stint data for df
     stints_rows = []
     for lineup in enumerate(stints, start=1):
+        # to build stint df later
         row = {'id' : lineup[0], 'lineup' : sorted(lineup[1]), 'intervals' : stints[lineup[1]]}
         stints_rows.append(row)
 
@@ -328,7 +329,6 @@ def pbp_add_stint_col(pbp_df: pd.DataFrame, stints: dict, stint_col: str) -> tup
     #                'intervals': pd.Series(dtype='object')
     #                })
     stints_df = pd.DataFrame(stints_rows)
-    # stints_df = stints_df.append(row, ignore_index=True)
     stints_df['mins'] = stints_df['intervals'].apply(tools.intervals_to_mins)
 
     return stints_df, pbp2_df
