@@ -4,47 +4,67 @@
 
 The scripts and notebooks in this repo allows to extract information and statistics from Basketball game data provided by [fibalivestats](http://www.fibaorganizer.com/) for the [NBL Australian Basketball](https://nbl.com.au/) competition. It is similar in functionality and is inspired in R-based system [euRobasketAu](https://github.com/jgalowe/euRobasketAu?organization=jgalowe&organization=jgalowe).
 
-The data is mostly provided as JSON files via a game-id number, and most of the information extracted is in the form of [Panda](https://pandas.pydata.org/) dataframes.
+Game data (e.g., play-by-play information) is fetch (or provided offline) as a [JSON](https://www.w3schools.com/js/js_json_datatypes.asp) type structure via a game-id number (e.g., `1976446`).
 
-The **main system** is a Jupyter Notebook [bball_stats.ipynb](bball_stats.ipynb), which can be used to _incrementally_ construct (i.e., extend previous results) statistical tables as games are played along the season. 
+The structure is processed to build various [Panda](https://pandas.pydata.org/) Dataframes (i.e., tables), which can then be saved as CSV or Excel files, or as [Pickle](https://docs.python.org/3/library/pickle.html) format for re-loading later on.
 
-The **output** of this notebook/system are:
+The **main system** is a Jupyter Notebook [bball_stats.ipynb](bball_stats.ipynb), which can be used to _incrementally_ construct (i.e., extend previous results) statistical tables as games are played along the season.
 
-- a Pandas table with stats for each teams' _stint_ (e.g., lineup of players who played together in different intervals during the game).
-- a Pandas table with games' information (e.g., team names, scores, date, venue, etc.).
+Currently, the system focuses on building _stint lineup_ statistics (but will be extended further to calculate other stats, like with/without or on/off). To do so, the system builds the following **main tables**:
 
-The system can also extract, via various functions, the following information:
+- a Pandas table with _**games' information**_ (e.g., team names, scores, date, venue, etc.).
+- a Pandas table with stats for each _**teams' stint lineup**_ (e.g., lineup of players who played together in different intervals during the game).
 
+These Pandas Dataframes can then be saved in various formats, inclding CSV and Excel.
+
+To compute the above tables, the system also extracts/computes, via various functions, the following information:
+
+- **Game information**, including teams, scores, venue, and date.
+- The **starting lineup** of a team.
 - A **table of stints** for each team containing the lineup of players of each stint, the intervals and the number of minutes the stint was on court.
 - A **play-by-play** DataFrame, with and without the stint id on each play for each team (denoting which lineups where on court at a play).
-- The **starting lineup** of a team.
-- **Game information**, including teams, scores, venue, and date.
+
+- [Pynbl: Python AUS Bball Statistic System](#pynbl-python-aus-bball-statistic-system)
+  - [1. Pre-requisites](#1-pre-requisites)
+  - [2. How to use the system](#2-how-to-use-the-system)
+    - [Main functions](#main-functions)
+  - [3. Development info](#3-development-info)
+    - [Game number id](#game-number-id)
+    - [Main game data](#main-game-data)
+    - [Date and venue information](#date-and-venue-information)
+    - [Date and time formats](#date-and-time-formats)
+    - [Statistics Fields](#statistics-fields)
+  - [Links & Resources](#links--resources)
+  - [API Services](#api-services)
+    - [Genius Sports](#genius-sports)
+    - [Other APIs and pages](#other-apis-and-pages)
+    - [Other similar basketball stat systems/pages](#other-similar-basketball-stat-systemspages)
+    - [Data visualization](#data-visualization)
+  - [Contact & Contributions](#contact--contributions)
 
 ## 1. Pre-requisites
 
-The system needs Python and Jupyter notebook, and requires at least `panda` and `dtale` packages:
+The system runs in Python 3.8+ as a Jupyter notebook.
+
+Assuming Python is installed, install the required modules by running:
 
 ```shell
-$ pip install pandas dtale
-```
-
-For the doing plots and charts:
-
-```shell
-$ pip install matplotlib seaborn 
+$ pip install -r requirements.txt
 ```
 
 The system has been developed with [VS Code](https://code.visualstudio.com/docs/datascience/jupyter-notebooks) and its [Jupyter extension](https://pypi.org/project/jupyter/).
 
-## 2. How to use it
+Data is fetched from the [Genius Sports](https://news.geniussports.com/australian-national-basketball-league-extends-data-technology-partnership-with-genius-sports-group/) clould service via their link `https://livestats.dcd.shared.geniussports.com/data`. Some relevant documentation can be found [here](https://support.geniussports.com/en/support/solutions/articles/9000008009-api-feed-overview-and-documentation),although it does not seem to be exactly that REST API.
 
-The main system is implemented as Jupyter notebook [bball_stats.ipynb](bball_stats.ipynb). This notebook can be opened and used via the browser (with a proper Juypter server running) or better via [VS Code](https://code.visualstudio.com/docs/datascience/jupyter-notebooks).
+## 2. How to use the system
 
-The data computed are:
+Open Jupyter notebook [bball_stats.ipynb](bball_stats.ipynb), via the browser (with a proper Juypter server running) or via an IDE like [VS Code](https://code.visualstudio.com/docs/datascience/jupyter-notebooks).
 
-- `stats_df`: a Pandas DataFrame (i.e., table) with all statistics per team stints in games.
-- `games_df`: a Pandas DataFrame with games's scraped.
-- `pbp_df`: a Pandas DataFrame containing all play-by-play data.
+The data tables computed are the following Pandas dataframes:
+
+- `stats_df`: all stint lineup statistics per team in games.
+- `games_df`: basic information about each games.
+- `pbp_df`: all play-by-play data.
 
 The steps are as follows:
 
@@ -70,19 +90,67 @@ At the end, the new tables `stats_df` and `games_df`  are the initial (loaded) t
 
 ## 3. Development info
 
-### JSON game data via Fibalivestats
+### Game number id
 
-**Game data** as JSON file is provided by link:
+Each game has a number id, which is needed to scrape all the game data.
 
-https://fibalivestats.dcd.shared.geniussports.com/data/XXXXXXX/data.json
-
-where `XXXXXXX` refers to the game id. This game id can be obtained from the NBL link, for example for game id `2087737`:
+This game id can be obtained from the NBL link, for example for game id `2087737`:
 
 https://nbl.com.au/games/2087737
 
-The service seems to be provided by [Genius Sports ](https://developer.geniussports.com/), which also provides _livestream data feed_, but seems to require an API key via registration. Developer info can be found [here](https://developer.geniussports.com/livestats/tvfeed/index_basketball.html); see also links below.
+### Main game data
 
-The date and venue of a game is scraped from HTML pages (via [request](https://requests.readthedocs.io/en/latest/) and [BeautifulSoup](https://www.crummy.com/software/BeautifulSoup/bs4/doc/) Python packages) using links of this form:
+Most of the game data comes as a JSON structure provided by Fibalivestats via the following link template:
+
+https://fibalivestats.dcd.shared.geniussports.com/data/XXXXXXX/data.json
+
+where `XXXXXXX` refers to the game id.
+
+```json
+{
+    "clock": "00:00",
+    "period": 4,
+    "periodLength": 10,
+    "periodType": "REGULAR",
+    "inOT": 0,
+    "tm": {
+        ...
+    },
+    "pbp": [
+        ...
+    ],
+    "leaddata": [
+        ...
+    ],
+    "disableMatch": 0,
+    "attendance": 4015,
+    "periodsMax": 4,
+    "periodLengthREGULAR": 10,
+    "periodLengthOVERTIME": 5,
+    "timeline": [],
+    "scorers": {
+        ...
+    },
+    "totalTimeAdded": 0,
+    "totallds": {
+        ...
+    },
+    "officials": {
+        ...
+    },
+    "othermatches": [
+        ...
+    ]
+}
+```
+
+The main key processed in `pbp`, which stores the play-by-play information of the game. The `tm` key (team information) is also used to extract the starting line of each team.
+
+The API clould service is provided by [Genius Sports ](https://developer.geniussports.com/), which also provides _livestream data feed_, but seems to require an API key via registration. Developer info can be found [here](https://developer.geniussports.com/livestats/tvfeed/index_basketball.html); see also links below.
+
+### Date and venue information
+
+The _date_ and _venue_ of a game is not part of the JSON data, so it is scraped from HTML pages (via [request](https://requests.readthedocs.io/en/latest/) and [BeautifulSoup](https://www.crummy.com/software/BeautifulSoup/bs4/doc/) Python packages) using links of this form:
 
 https://fibalivestats.dcd.shared.geniussports.com/u/NBL/1976446/
 
@@ -92,20 +160,11 @@ https://fibalivestats.dcd.shared.geniussports.com/data/competition/30249.json
 
 Although it is not clear what `30249` means and how it can be obtained.
 
-### JSON Data format
+### Date and time formats
 
-**[INCOMPLETE - TO DEVELOP]**
+The _**game time**_ is tracked in format `MM:SS`, whereas the _**clock time**_ is tracked as `MM:SS:CC`, where `CC` is hundredths of a second. 
 
-| ID            | Description | Format | Type |
-| -----------   | ----------- | ------ | ---- |
-| `gt`          | Game time | `datetime.time`  | `MM:SS`
-| `clock`       | Clock time    | `datetime.time`   | `MM:SS:CC`
-| `s1`       | Score team 1 | `int`
-| `s2`       | Score team 2 | `int`
-
-where:
-
-- `MM:SS:CC`, where `CC` is hundredths of a second. When a period starts, lock is "`10:00:00`" (10 min left).
+When a period starts, clock is "`10:00:00`" (that is, 10 min left).
 
 ### Statistics Fields
 
@@ -115,12 +174,9 @@ A good example of statistic fields and settings that can be done can be found he
 
 https://www.basketball-reference.com/players/a/antetgi01/lineups/2016
 
-### Data visualization
+## Links & Resources
 
-* [Public Tableau](https://public.tableau.com) can be used to visualize the data produced by this system, for example [here](https://public.tableau.com/app/profile/john5460/viz/NBL2021-22/CompareOnOff?publish=yes)
-* Special graphs and charts can be done using [seaborn](https://seaborn.pydata.org/) and [matplotlib](https://matplotlib.org/). **[INCOMPLETE - TO DEVELOP]**
-
-## 4. API Services
+## API Services
 
 ### Genius Sports
 
@@ -136,12 +192,19 @@ https://www.basketball-reference.com/players/a/antetgi01/lineups/2016
 - [FIBA LiveStats V7](http://www.fibaorganizer.com/): a notebook-based software application to record basketball game statistics and webcast games in real time.
 - [Best API](https://betsapi.com/l/1714/Australia-NBL): paid RESTful API.
 
-## Other similar systems
+### Other similar basketball stat systems/pages
 
 * [euRobasketAu](https://github.com/jgalowe/euRobasketAu?organization=jgalowe&organization=jgalowe): a collection of R scripts to  scrape game data from [fibalivestats](http://www.fibaorganizer.com/) and calculate _advanced stats_. It is an adaptation of a system for European leagues and the system Py-nbl-stats is inspired on.
+* [Basketball-reference.com](https://www.basketball-reference.com/players/g/ginobma01.html): here is an example of stats for each player, in this case Manu Ginobili.
+* [Cleaning-the-glass](https://cleaningtheglass.com/stats/guide/player_onoff): Players on/off explained.
+
+### Data visualization
+
+* [Public Tableau](https://public.tableau.com) can be used to visualize the data produced by this system, for example [here](https://public.tableau.com/app/profile/john5460/viz/NBL2021-22/CompareOnOff?publish=yes)
+* Special graphs and charts can be done using [seaborn](https://seaborn.pydata.org/) and [matplotlib](https://matplotlib.org/). **[INCOMPLETE - TO DEVELOP]**
 
 ## Contact & Contributions
 
-Developed by Sebastian Sardina (ssardina@gmail.com, [ssardina @ GitHub](https://github.com/ssardina)) with support from [jgalowe @ GitHub](https://github.com/jgalowe). 
+Developed by Sebastian Sardina (ssardina@gmail.com, [ssardina @ GitHub](https://github.com/ssardina)) with support from [jgalowe @ GitHub](https://github.com/jgalowe).
 
 Based on [euRobasketAu](https://github.com/jgalowe/euRobasketAu?organization=jgalowe&organization=jgalowe) R-based scripts.
