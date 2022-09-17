@@ -104,7 +104,8 @@ def get_starters(game_json, tm: int) -> set:
     # list of starters on each team
     # starters = set(pl_df.loc[pl_df['starter'] == 1, 'name'].tolist())
     starters_df = pl_df.loc[pl_df['starter'] == 1]
-    starters = set(starters_df.apply(lambda x: f"{x['internationalFirstNameInitial']}. {x['internationalFamilyName']}", axis=1).tolist())
+    # starters = set(starters_df.apply(lambda x: f"{x['internationalFirstNameInitial']}. {x['internationalFamilyName']}", axis=1).tolist())
+    starters = set(tools.build_player_names(starters_df).tolist())
 
     return starters
 
@@ -121,7 +122,7 @@ def get_pbp_df(data_json):
     pbp_df = pd.json_normalize(data_json, record_path =['pbp'])
 
     # standarize player's name to be used all over
-    pbp_df['player'] = pbp_df.apply(lambda x: f"{x['internationalFirstNameInitial']}. {x['internationalFamilyName']}", axis=1)
+    pbp_df['player'] = pbp_df.apply(lambda x: tools.build_player_names(x), axis=1)
     pbp_df.loc[pbp_df['periodType'] == "OVERTIME", 'period'] = pbp_df['period'] + 4 # make overtime periods start at 5
 
     # keep columns 1 to 17, drop all player info
@@ -172,7 +173,7 @@ def get_players_stats(game_json) -> pd.DataFrame:
     for tno in ['1', '2']:
         players_df = pd.json_normalize(game_json['tm'][tno]['pl'].values())
         players_df.insert(0, 'tno', tno)
-        players_df.insert(1, 'player', players_df.apply(lambda x: f"{x['internationalFirstNameInitial']}. {x['internationalFamilyName']}", axis=1))
+        players_df.insert(1, 'player', tools.build_player_names(players_df))
         players_df.insert(2, 'shirtNumber', players_df.pop('shirtNumber'))
         players_df['captain'] = (players_df.captain == 1.0)
 
@@ -313,41 +314,48 @@ def pbp_stints_extract(pbp_df : pd.DataFrame, starter_team: set, team_no: int) -
     stints = {} # here we will collect the result as a dictionary!
 
     # start with the starting lineup of the team
-    current_team = starter_team 
+    current_team = starter_team
     current_team = frozenset(current_team)
     logging.debug(f"Start computing stints for team {team_no} with starters: {current_team}")
 
     for period in range(1, pbp_df['period'].max()+1):
-        prev_clock = datetime.time(hour=0, minute=10 if period < 5 else 5, second=0)
-        end_clock = datetime.time(hour=0, minute=0, second=0)
-        subs = pbp_df.loc[(pbp_df['actionType'] == 'substitution') &    # all subs done in period
-                            (pbp_df['tno'] == team_no) &
-                            (pbp_df['period'] == period)]
+        # first, get the substitutions plays for the team number in the period
+        subs_df = pbp_df.query("actionType == 'substitution' and tno == @team_no and period == @period")
+        # subs_df = pbp_df.loc[(pbp_df['actionType'] == 'substitution') &    # all subs done in period
+        #                     (pbp_df['tno'] == team_no) &
+        #                     (pbp_df['period'] == period)]
+
         # keep the last sub of a player that appears more than once in one clock
         # very strange, but it happens. There could be odd or even number of rep per player!
         #   1976446: OVERTIME 17.80secs - player McVeigh comes in, makes 3pt, and gets out. no time passes! :-)
         #   2004608: Period 2 05.600 - B. Kuol (team 2) come out, but then in and out
-        subs = subs.drop_duplicates(subset=['clock', 'player'], keep='last')
+        subs_df = subs_df.drop_duplicates(subset=['clock', 'player'], keep='last')
 
+        # initialize tracking clocks
+        prev_clock = datetime.time(hour=0, minute=10 if period < 5 else 5, second=0)
+        end_clock = datetime.time(hour=0, minute=0, second=0)
 
-        for sub_clock in list(subs['clock'].unique()) + [end_clock]: # loop on the sub times for the team
+        # loop on the sub times for the team until end of the clock (end of period)
+        for sub_clock in list(subs_df['clock'].unique()) + [end_clock]:
             # interval = pd.Interval(datetime.datetime.timestamp(prev_clock), datetime.datetime.timestamp(sub_clock), closed='left')
             interval = (period, prev_clock, sub_clock)
+            logging.debug(f"=====> Substitution in period {period} @ {sub_clock}")
+
             if current_team in stints:
                 stints[current_team].append(interval)   # append intervals of existing stint
             else:
                 stints[current_team] = [interval]   # new stint found!
-                logging.debug(f"New stint found: {current_team}")
+                logging.debug(f"New stint was found: {current_team}")
 
-            players_in = set(subs.loc[(subs['clock'] == sub_clock) &
-                                    (subs['subType'] == 'in'), 'player'].tolist())
-            players_out = set(subs.loc[(subs['clock'] == sub_clock) &
-                                    (subs['subType'] == 'out'), 'player'].tolist())
+            players_in = set(subs_df.loc[(subs_df['clock'] == sub_clock) &
+                                    (subs_df['subType'] == 'in'), 'player'].tolist())
+            players_out = set(subs_df.loc[(subs_df['clock'] == sub_clock) &
+                                    (subs_df['subType'] == 'out'), 'player'].tolist())
 
             if players_in.intersection(current_team):
-                logging.warning(f"Sub team {team_no} at {sub_clock} in period {period}: incoming players already in court: {players_in.intersection(current_team)}")
+                logging.warning(f"Sub team {team_no} @ {sub_clock} in period {period}: incoming players already in court: {players_in.intersection(current_team)}")
             if players_out and not players_out.intersection(current_team) :
-                logging.warning(f"Sub team {team_no} at {sub_clock} in period {period}: outcoming players not in court: {players_out.difference(current_team)}")
+                logging.warning(f"Sub team {team_no} @ {sub_clock} in period {period}: outcoming players not in court: {players_out.difference(current_team)}")
 
             # # remove players that have been swapped in and out at the same time
             # # very strange, but it happens. check OVERTIME 17.80secs on game 1976446
@@ -356,7 +364,6 @@ def pbp_stints_extract(pbp_df : pd.DataFrame, starter_team: set, team_no: int) -
             # players_in = players_in.difference(phantom_players)
             # players_out = players_out.difference(phantom_players)
 
-            logging.debug(f"=====> Substitution period {period} at time: {sub_clock}")
             logging.debug(f"Players out: {players_out}")
             logging.debug(f"Players in: {players_in}")
             logging.debug(f"Current team: {current_team}")

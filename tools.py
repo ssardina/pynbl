@@ -108,3 +108,19 @@ def get_game_info(game_id : int) -> dict:
     #     print("==========")
 
     return game_dict
+
+
+def build_player_names(x : pd.Series | pd.DataFrame) -> pd.Series | pd.DataFrame:
+    """Output the standarized name of a player
+
+    Args:
+        x (pd.Series | pd.DataFrame): a serie or a dataframe with player information as per data json
+
+    Returns:
+        pd.Series | pd.DataFrame : a series with standarized names of each player
+    """
+    if isinstance(x, pd.Series):
+    # return f"{x['internationalFirstNameInitial']}. {x['internationalFamilyName']}"
+        return f"{x['internationalFirstName']} {x['internationalFamilyName']}"
+    elif isinstance(x, pd.DataFrame):
+        return x.apply(lambda x: f"{x['internationalFirstName']} {x['internationalFamilyName']}", axis=1)
