@@ -5,3 +5,4 @@ dtale
 datetime
 coloredlogs
 bs4
+selenium
