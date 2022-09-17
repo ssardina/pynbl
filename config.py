@@ -74,7 +74,7 @@ F_24SEC = 'tov_24sec'
 
 F_OPPFGABLK = 'opp_fga_blocked'
 
-DATA_COLS = [ F_POSS, F_ORTG, F_DRTG, F_NRTG,
+STATS_COLS = [ F_POSS, F_ORTG, F_DRTG, F_NRTG,
                 #  Shooting
                 F_FGA, F_FGM, F_FGP, F_PTS,
                 F_PATRA, F_PATRM, F_PATRP,

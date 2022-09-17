@@ -511,31 +511,26 @@ def build_game_stints_stats_df(game_id : int) -> dict:
     # 1. Read game JSON file
     game_json = tools.get_json_data(game_id)
     pbp_df = get_pbp_df(game_json)
-    logging.debug(f"Extacting stint stats for game {game_id} - PBP df computed with shape: {pbp_df.shape}.")
+    logging.debug(f"Extracting stint stats for game {game_id} - PBP df computed with shape: {pbp_df.shape}.")
 
-    # 2. Extract names of teams in the game and scores
+    # 2. Extract names of teams and scores in the game
     team_names = get_team_names(game_json)
     team_name_1, _ = team_names[0]
     team_name_2, _ = team_names[1]
-
     score_1, score_2 = get_team_scores(game_json)
 
     # print(f"====> Game {team_name_1} ({team_short_name_1}) vs {team_name_2} ({team_short_name_2})")
     # print(f"Play-by-play df for game {game_id}: {pbp_df.shape}")
 
-    # 3. Compute stints for each team
+    # 3. Compute stints (dictionaries) for each team
     starters_1 = get_starters(game_json, 1)
     starters_2 = get_starters(game_json, 2)
     logging.debug(f"Starters for each team computed: {starters_1} / {starters_2}")
-    # for x in zip([team_name_1, team_name_2], [starters_1, starters_2]):
-    #     print(f"Starters for {x[0]}: {x[1]}")
-
     stints_1 = pbp_stints_extract(pbp_df, starters_1, 1)
     stints_2 = pbp_stints_extract(pbp_df, starters_2, 2)
     logging.debug(f"Stints for each team computed: {len(stints_1)} / {len(stints_2)}")
 
-
-    # 4. Add stint info to pbp df
+    # 4. Add stint columns to pbp df, one column per team having stint id number
     stints1_df, pbp_df = pbp_add_stint_col(pbp_df, stints_1, "stint1")
     stints2_df, pbp_df = pbp_add_stint_col(pbp_df, stints_2, "stint2")
     logging.debug(f"Stints columns added to pbp df for both teams")
@@ -547,47 +542,49 @@ def build_game_stints_stats_df(game_id : int) -> dict:
     # pbp_df = pbp_df.loc[(~pbp_df['subType'].isin(ACTSSUB_NON_STATS))]
     # pbp_df.reset_index(inplace=True, drop=True)     # re-index as we may have dropped rows
 
-    # 6. BUILD STATS: build stint stats for each team
-    stats1_df = build_stats_df(pbp_df, 1, "stint1") # full stats for team 1
-    stats2_df = build_stats_df(pbp_df, 2, "stint2") # full stats for team 2
+    # 6. Build single stint stats dataframe containing both teams
+    stint_stats1_df = build_stats_df(pbp_df, 1, "stint1") # full stats for team 1
+    stint_stats2_df = build_stats_df(pbp_df, 2, "stint2") # full stats for team 2
 
-    stats1_df.rename(columns={'stint1' : 'stint'}, inplace=True)    # uniform stint col
-    stats2_df.rename(columns={'stint2' : 'stint'}, inplace=True)
+    # unify stint column name to just "stint"
+    stint_stats1_df.rename(columns={'stint1' : 'stint'}, inplace=True)
+    stint_stats2_df.rename(columns={'stint2' : 'stint'}, inplace=True)
 
-    stats_df = pd.concat([stats1_df, stats2_df])
-    stats_df.reset_index(inplace=True, drop=True)
-    logging.debug(f"Stats df computed for both teams")
+    # put both stint stats together into a single dataframe
+    stint_stats_df = pd.concat([stint_stats1_df, stint_stats2_df])
+    stint_stats_df.reset_index(inplace=True, drop=True)
+    logging.debug(f"Stint lineup stats df computed (for both teams)")
 
-    # 7. Reorder columns
+    # finally, re-order columns (_opp at the end)
     index_col = ['tno', 'stint']
-    stats_df = stats_df[index_col + DATA_COLS + [f'{x}_opp' for x in DATA_COLS]]
+    stint_stats_df = stint_stats_df[index_col + STATS_COLS + [f'{x}_opp' for x in STATS_COLS]]
 
-    # 8. Add stint info to stat df
+    # 7. Put together the final stint df
     stints1_df['tno'] = 1
     stints1_df['team'] = team_name_1
     stints2_df['tno'] = 2
     stints2_df['team'] = team_name_2
     stints_df = pd.concat([stints1_df, stints2_df])
-    stats_df.reset_index(inplace=True, drop=True)
+    stints_df.reset_index(inplace=True, drop=True)
+    index_col = ['id', 'tno', 'team']   # re-order cols
+    stints_df = stints_df[index_col + list(filter(lambda x: x not in index_col, stints_df.columns))]
 
-    # 9. Merge stats table with stint table
-    stats_df = stats_df.merge(stints_df, left_on=['tno', 'stint'], right_on=['tno', 'id'])
-    stats_df.drop('id', axis=1, inplace=True) # we don't need it, already in stint col
-    team_name_col = stats_df.pop('team')
-    stats_df.insert(1, "team", team_name_col)
+    # 8. Merge stint stats table with stint table to get stint info to stints stats (e.g., intervals and stint players)
+    stint_stats_df = stint_stats_df.merge(stints_df, left_on=['tno', 'stint'], right_on=['tno', 'id'])
+    stint_stats_df.drop('id', axis=1, inplace=True) # we don't need it, already in stint col
+    team_name_col = stint_stats_df.pop('team')
+    stint_stats_df.insert(1, "team", team_name_col)
 
-    # 10. Build result dictionaryunique
+    # FINALLY, build result dictionary
     result = {}
     result["id"] = game_id
     result["json_data"] = game_json
     result["pbp_df"] = pbp_df
     result["teams"] = [(team_name_1, score_1), (team_name_2, score_2)]
-    result["stint_stats_df"] = stats_df
+    result["stint_stats_df"] = stint_stats_df
     result['stints_df'] = stints_df
 
     return result
-
-
 
 
 # %%
