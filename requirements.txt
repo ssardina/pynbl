@@ -4,3 +4,4 @@ numpy
 dtale
 datetime
 coloredlogs
+bs4
