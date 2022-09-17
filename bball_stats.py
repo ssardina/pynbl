@@ -159,10 +159,126 @@ def get_pbp_df(data_json):
     return pbp_df
 
 
+def get_players_stats(game_json) -> pd.DataFrame:
+    """Extract game stats for each player form game JSOn data
+
+    Args:
+        game_json (json dict): the json data of a game
+
+    Returns:
+        pd.DataFrame: a table with stats per player in the game for both teams
+    """
+    players_dfs = []
+    for tno in ['1', '2']:
+        players_df = pd.json_normalize(game_json['tm'][tno]['pl'].values())
+        players_df.insert(0, 'tno', tno)
+        players_df.insert(1, 'player', players_df.apply(lambda x: f"{x['internationalFirstNameInitial']}. {x['internationalFamilyName']}", axis=1))
+        players_df.insert(2, 'shirtNumber', players_df.pop('shirtNumber'))
+        players_df['captain'] = (players_df.captain == 1.0)
+
+        players_df['sMinutes'] = pd.to_datetime(players_df['sMinutes'], format="%M:%S").dt.time
+        players_df.drop(players_df[players_df.sMinutes < datetime.time(0, 0, 1)].index, inplace=True)   # drop players with no minutes on court
+        players_dfs.append(players_df)
+
+    players_df = pd.concat(players_dfs)
+    players_df.reset_index(drop=True, inplace=True)
+
+    return players_df
+
+
+
+
+def build_game_stints_stats_df(game_json : dict, game_id = np.NaN) -> dict:
+    """Build dataframe with stint statistics for a game, by extracting play-by-play data
+
+    Args:
+        game_json (dict): json dict data of the game
+        game_id (int) : game id of the game, if any
+
+    Returns:
+        dict: contains various data and df for the game (including pbp and stint stats dfs)
+    """
+    # 1. Extract names of teams and scores in the game
+    team_names = get_team_names(game_json)
+    team_name_1, _ = team_names[0]
+    team_name_2, _ = team_names[1]
+    score_1, score_2 = get_team_scores(game_json)
+
+    # 2. Read game JSON file
+    pbp_df = get_pbp_df(game_json)
+
+    logging.debug(f"Extracting stint stats for game {game_id} [{team_name_1} ({score_1}) vs {team_name_2} ({score_2})] - No of PBP: {pbp_df.shape[0]}.")
+
+    # print(f"====> Game {team_name_1} ({team_short_name_1}) vs {team_name_2} ({team_short_name_2})")
+    # print(f"Play-by-play df for game {game_id}: {pbp_df.shape}")
+
+    # 3. Compute stints (dictionaries) for each team
+    starters_1 = get_starters(game_json, 1)
+    starters_2 = get_starters(game_json, 2)
+    logging.debug(f"Starters for each team computed: {starters_1} / {starters_2}")
+    stints_1 = pbp_stints_extract(pbp_df, starters_1, 1)
+    stints_2 = pbp_stints_extract(pbp_df, starters_2, 2)
+    logging.debug(f"Stints for each team computed: {len(stints_1)} / {len(stints_2)}")
+
+    # 4. Add stint columns to pbp df, one column per team having stint id number
+    stints1_df, pbp_df = pbp_add_stint_col(pbp_df, stints_1, "stint1")
+    stints2_df, pbp_df = pbp_add_stint_col(pbp_df, stints_2, "stint2")
+    logging.debug(f"Stints columns added to pbp df for both teams")
+
+
+    # 5. Drop plays that are not for statistics (game events, like start/end)
+    # Why do we drop plays? Just leave them, who cares..
+    # pbp_df = pbp_df.loc[(~pbp_df['actionType'].isin(ACT_NON_STATS))]
+    # pbp_df = pbp_df.loc[(~pbp_df['subType'].isin(ACTSSUB_NON_STATS))]
+    # pbp_df.reset_index(inplace=True, drop=True)     # re-index as we may have dropped rows
+
+    # 6. Build single stint stats dataframe containing both teams
+    stint_stats1_df = build_stats_df(pbp_df, 1, "stint1") # full stats for team 1
+    stint_stats2_df = build_stats_df(pbp_df, 2, "stint2") # full stats for team 2
+
+    # unify stint column name to just "stint"
+    stint_stats1_df.rename(columns={'stint1' : 'stint'}, inplace=True)
+    stint_stats2_df.rename(columns={'stint2' : 'stint'}, inplace=True)
+
+    # put both stint stats together into a single dataframe
+    stint_stats_df = pd.concat([stint_stats1_df, stint_stats2_df])
+    stint_stats_df.reset_index(inplace=True, drop=True)
+    logging.debug(f"Stint lineup stats df computed (for both teams)")
+
+    # finally, re-order columns (_opp at the end)
+    index_col = ['tno', 'stint']
+    stint_stats_df = stint_stats_df[index_col + STATS_COLS + [f'{x}_opp' for x in STATS_COLS]]
+
+    # 7. Put together the final stint df
+    stints1_df['tno'] = 1
+    stints1_df['team'] = team_name_1
+    stints2_df['tno'] = 2
+    stints2_df['team'] = team_name_2
+    stints_df = pd.concat([stints1_df, stints2_df])
+    stints_df.reset_index(inplace=True, drop=True)
+    index_col = ['id', 'tno', 'team']   # re-order cols
+    stints_df = stints_df[index_col + list(filter(lambda x: x not in index_col, stints_df.columns))]
+
+    # 8. Merge stint stats table with stint table to get stint info to stints stats (e.g., intervals and stint players)
+    stint_stats_df = stint_stats_df.merge(stints_df, left_on=['tno', 'stint'], right_on=['tno', 'id'])
+    stint_stats_df.drop('id', axis=1, inplace=True) # we don't need it, already in stint col
+    team_name_col = stint_stats_df.pop('team')
+    stint_stats_df.insert(1, "team", team_name_col)
+
+    # FINALLY, build result dictionary
+    result = {}
+    result["id"] = game_id
+    result["json_data"] = game_json
+    result["pbp_df"] = pbp_df
+    result["teams"] = [(team_name_1, score_1), (team_name_2, score_2)]
+    result["stint_stats_df"] = stint_stats_df
+    result['stints_df'] = stints_df
+
+    return result
+
 # ##########################################################
 # CODE USING P-B-P DATAFRAME
 # ##########################################################
-
 def pbp_get_actions(pbp_df: pd.DataFrame) -> pd.DataFrame:
     """Given a pbp dataframe, build a table wtih all possible actions and subactions
 
@@ -499,92 +615,7 @@ def build_stats_df(pbp_df: pd.DataFrame, tno: int, agg_col = (lambda x: True)) -
     return stats_df
 
 
-def build_game_stints_stats_df(game_id : int) -> dict:
-    """Build dataframe with stint statistics for a game, by extracting play-by-play data
 
-    Args:
-        game_id (int): the id of the game
-
-    Returns:
-        dict: contains various data and df for the game (including pbp and stint stats dfs)
-    """
-    # 1. Read game JSON file
-    game_json = tools.get_json_data(game_id)
-    pbp_df = get_pbp_df(game_json)
-    logging.debug(f"Extracting stint stats for game {game_id} - PBP df computed with shape: {pbp_df.shape}.")
-
-    # 2. Extract names of teams and scores in the game
-    team_names = get_team_names(game_json)
-    team_name_1, _ = team_names[0]
-    team_name_2, _ = team_names[1]
-    score_1, score_2 = get_team_scores(game_json)
-
-    # print(f"====> Game {team_name_1} ({team_short_name_1}) vs {team_name_2} ({team_short_name_2})")
-    # print(f"Play-by-play df for game {game_id}: {pbp_df.shape}")
-
-    # 3. Compute stints (dictionaries) for each team
-    starters_1 = get_starters(game_json, 1)
-    starters_2 = get_starters(game_json, 2)
-    logging.debug(f"Starters for each team computed: {starters_1} / {starters_2}")
-    stints_1 = pbp_stints_extract(pbp_df, starters_1, 1)
-    stints_2 = pbp_stints_extract(pbp_df, starters_2, 2)
-    logging.debug(f"Stints for each team computed: {len(stints_1)} / {len(stints_2)}")
-
-    # 4. Add stint columns to pbp df, one column per team having stint id number
-    stints1_df, pbp_df = pbp_add_stint_col(pbp_df, stints_1, "stint1")
-    stints2_df, pbp_df = pbp_add_stint_col(pbp_df, stints_2, "stint2")
-    logging.debug(f"Stints columns added to pbp df for both teams")
-
-
-    # 5. Drop plays that are not for statistics (game events, like start/end)
-    # Why do we drop plays? Just leave them, who cares..
-    # pbp_df = pbp_df.loc[(~pbp_df['actionType'].isin(ACT_NON_STATS))]
-    # pbp_df = pbp_df.loc[(~pbp_df['subType'].isin(ACTSSUB_NON_STATS))]
-    # pbp_df.reset_index(inplace=True, drop=True)     # re-index as we may have dropped rows
-
-    # 6. Build single stint stats dataframe containing both teams
-    stint_stats1_df = build_stats_df(pbp_df, 1, "stint1") # full stats for team 1
-    stint_stats2_df = build_stats_df(pbp_df, 2, "stint2") # full stats for team 2
-
-    # unify stint column name to just "stint"
-    stint_stats1_df.rename(columns={'stint1' : 'stint'}, inplace=True)
-    stint_stats2_df.rename(columns={'stint2' : 'stint'}, inplace=True)
-
-    # put both stint stats together into a single dataframe
-    stint_stats_df = pd.concat([stint_stats1_df, stint_stats2_df])
-    stint_stats_df.reset_index(inplace=True, drop=True)
-    logging.debug(f"Stint lineup stats df computed (for both teams)")
-
-    # finally, re-order columns (_opp at the end)
-    index_col = ['tno', 'stint']
-    stint_stats_df = stint_stats_df[index_col + STATS_COLS + [f'{x}_opp' for x in STATS_COLS]]
-
-    # 7. Put together the final stint df
-    stints1_df['tno'] = 1
-    stints1_df['team'] = team_name_1
-    stints2_df['tno'] = 2
-    stints2_df['team'] = team_name_2
-    stints_df = pd.concat([stints1_df, stints2_df])
-    stints_df.reset_index(inplace=True, drop=True)
-    index_col = ['id', 'tno', 'team']   # re-order cols
-    stints_df = stints_df[index_col + list(filter(lambda x: x not in index_col, stints_df.columns))]
-
-    # 8. Merge stint stats table with stint table to get stint info to stints stats (e.g., intervals and stint players)
-    stint_stats_df = stint_stats_df.merge(stints_df, left_on=['tno', 'stint'], right_on=['tno', 'id'])
-    stint_stats_df.drop('id', axis=1, inplace=True) # we don't need it, already in stint col
-    team_name_col = stint_stats_df.pop('team')
-    stint_stats_df.insert(1, "team", team_name_col)
-
-    # FINALLY, build result dictionary
-    result = {}
-    result["id"] = game_id
-    result["json_data"] = game_json
-    result["pbp_df"] = pbp_df
-    result["teams"] = [(team_name_1, score_1), (team_name_2, score_2)]
-    result["stint_stats_df"] = stint_stats_df
-    result['stints_df'] = stints_df
-
-    return result
 
 
 # %%
