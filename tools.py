@@ -40,31 +40,32 @@ def intervals_to_mins(intervals: list) -> float:
     return minutes
 
 
-def get_json_data(game_id: int, reload=False) :
-    """Load a game into a JSON object. 
+def get_json_data(game_id: int, dir='.') :
+    """Load a game into a JSON object.
         Data will be loaded from local file data-{game_id}.json if exists
         Otherwise will be fetched from server
 
     Args:
         game_id (int): id of the game
+        dir (str): folder where to check and save a copy
 
     Returns:
         json-object: An object with JSON structure dict/list
     """
-    game_file = os.path.join(DATA_DIR, f"data-{game_id}.json")
+    file_json = os.path.join(dir, f"data-{game_id}.json")
     game_url = os.path.join(URL_LIVESTATS, str(game_id), "data.json")
 
-    if not reload and os.path.exists(game_file):
-        data_json = json.load(open(game_file))
+    if os.path.exists(file_json):
+        data_json = json.load(open(file_json))
         # print(f"Game data loaded from local file: {game_file}")
     else:   # get if from URL
         # store the response of URL
         response = urlopen(game_url)
 
-        # storing the JSON response 
+        # storing the JSON response
         # from url in data
         data_json = json.loads(response.read())
-        with open(os.path.join(DATA_DIR, f'data-{game_id}.json'), 'w') as f:
+        with open(file_json, 'w') as f:
             json.dump(data_json, f)
         # print(f"Game data loaded from URL: {game_url}")
 
