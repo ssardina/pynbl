@@ -329,6 +329,7 @@ def pbp_stints_extract(pbp_df : pd.DataFrame, starter_team: set, team_no: int) -
         # very strange, but it happens. There could be odd or even number of rep per player!
         #   1976446: OVERTIME 17.80secs - player McVeigh comes in, makes 3pt, and gets out. no time passes! :-)
         #   2004608: Period 2 05.600 - B. Kuol (team 2) come out, but then in and out
+        #   2116381: Period 4 00:01:36 - Bul Kuol goes out and then in again!
         subs_df = subs_df.drop_duplicates(subset=['clock', 'player'], keep='last')
 
         # initialize tracking clocks
@@ -347,26 +348,25 @@ def pbp_stints_extract(pbp_df : pd.DataFrame, starter_team: set, team_no: int) -
                 stints[current_team] = [interval]   # new stint found!
                 logging.debug(f"New stint was found: {current_team}")
 
-            players_in = set(subs_df.loc[(subs_df['clock'] == sub_clock) &
-                                    (subs_df['subType'] == 'in'), 'player'].tolist())
-            players_out = set(subs_df.loc[(subs_df['clock'] == sub_clock) &
-                                    (subs_df['subType'] == 'out'), 'player'].tolist())
+            players_in = set(subs_df.query("clock == @sub_clock and subType == 'in'")['player'].tolist())
+            players_out = set(subs_df.query("clock == @sub_clock and subType == 'out'")['player'].tolist())
 
             if players_in.intersection(current_team):
                 logging.warning(f"Sub team {team_no} @ {sub_clock} in period {period}: incoming players already in court: {players_in.intersection(current_team)}")
-            if players_out and not players_out.intersection(current_team) :
+            if players_out.difference(current_team):
                 logging.warning(f"Sub team {team_no} @ {sub_clock} in period {period}: outcoming players not in court: {players_out.difference(current_team)}")
 
-            # # remove players that have been swapped in and out at the same time
-            # # very strange, but it happens. check OVERTIME 17.80secs on game 1976446
-            # #   player McVeigh comes in, makes 3pt, and gets out. no time passes! :-)
-            # phantom_players = players_in.intersection(players_out)
-            # players_in = players_in.difference(phantom_players)
-            # players_out = players_out.difference(phantom_players)
+            # Try to fix the in/out sets
+            players_in = players_in.difference(current_team)    # keep just those who are not on court (and are coming in)
+            players_out = players_out.intersection(current_team)    # keep just those who are on court (and are coming out)
 
+            # Hopefully we have a 1-to-1 substitution, otherwise report!
+            if len(players_in) != len(players_out):
+                logging.warning(f"Sub team {team_no} @ {sub_clock} in period {period}: number of in-subs ({len(players_in)}) different from numbers out-subs ({len(players_out)})")
+
+            logging.debug(f"Current team: {current_team}")
             logging.debug(f"Players out: {players_out}")
             logging.debug(f"Players in: {players_in}")
-            logging.debug(f"Current team: {current_team}")
             current_team = current_team.difference(players_out).union(players_in)
             logging.debug(f"New team: {current_team}")
 
