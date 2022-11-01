@@ -351,18 +351,23 @@ def pbp_stints_extract(pbp_df : pd.DataFrame, starter_team: set, team_no: int) -
             players_in = set(subs_df.query("clock == @sub_clock and subType == 'in'")['player'].tolist())
             players_out = set(subs_df.query("clock == @sub_clock and subType == 'out'")['player'].tolist())
 
+            dummy_sub = False
             if players_in.intersection(current_team):
                 logging.warning(f"Sub team {team_no} @ {sub_clock} in period {period}: incoming players already in court: {players_in.intersection(current_team)}")
+                dummy_sub = True
             if players_out.difference(current_team):
                 logging.warning(f"Sub team {team_no} @ {sub_clock} in period {period}: outcoming players not in court: {players_out.difference(current_team)}")
+                dummy_sub = True
 
-            # Try to fix the in/out sets
+            # Try to fix the in/out sets (sometimes player goes out and in again at the same time)
             players_in = players_in.difference(current_team)    # keep just those who are not on court (and are coming in)
             players_out = players_out.intersection(current_team)    # keep just those who are on court (and are coming out)
 
             # Hopefully we have a 1-to-1 substitution, otherwise report!
             if len(players_in) != len(players_out):
                 logging.warning(f"Sub team {team_no} @ {sub_clock} in period {period}: number of in-subs ({len(players_in)}) different from numbers out-subs ({len(players_out)})")
+            elif dummy_sub:
+                logging.info("Dummy subs fixed, good subs....")
 
             logging.debug(f"Current team: {current_team}")
             logging.debug(f"Players out: {players_out}")
