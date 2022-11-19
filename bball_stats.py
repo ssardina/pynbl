@@ -43,7 +43,8 @@ def set_logging(level):
 ##########################################################
 # CODE USING JSON DATA
 # ##########################################################
-def get_team_names(data_json):
+
+def get_team_names(game_json):
     """Extra team names from JSON game
 
     Args:
@@ -52,14 +53,14 @@ def get_team_names(data_json):
     Returns:
         list(tuple(string, string)): full and short names of both teams
     """
-    name_1 = data_json['tm']['1']['name']
-    name_2 = data_json['tm']['2']['name']
-    short_name_1 = data_json['tm']['1']['shortName']
-    short_name_2 = data_json['tm']['2']['shortName']
+    name_1 = game_json['tm']['1']['name']
+    name_2 = game_json['tm']['2']['name']
+    short_name_1 = game_json['tm']['1']['shortName']
+    short_name_2 = game_json['tm']['2']['shortName']
 
     return [(name_1, short_name_1), (name_2, short_name_2)]
 
-def get_team_scores(data_json):
+def get_team_scores(game_json):
     """Extra team names from JSON game
 
     Args:
@@ -68,8 +69,8 @@ def get_team_scores(data_json):
     Returns:
         tuple(int, int): scores for team 1 and 2
     """
-    score_1 = data_json['tm']['1']['full_score']
-    score_2 = data_json['tm']['2']['full_score']
+    score_1 = game_json['tm']['1']['full_score']
+    score_2 = game_json['tm']['2']['full_score']
 
     return (score_1, score_2)
 
@@ -110,16 +111,16 @@ def get_starters(game_json, tm: int) -> set:
     return starters
 
 
-def get_pbp_df(data_json):
+def get_pbp_df(game_json):
     # Extract names of teams in the game
-    team_names = get_team_names(data_json)
+    team_names = get_team_names(game_json)
     team_name_1, team_short_name_1 = team_names[0]
     team_name_2, team_short_name_2 = team_names[1]
 
     logging.debug(f"Will extract PBP df for game {team_name_1} ({team_short_name_1}) vs {team_name_2} ({team_short_name_2})")
 
     # extract play-by-play data
-    pbp_df = pd.json_normalize(data_json, record_path =['pbp'])
+    pbp_df = pd.json_normalize(game_json, record_path =['pbp'])
 
     # standarize player's name to be used all over
     pbp_df['player'] = pbp_df.apply(lambda x: tools.build_player_names(x), axis=1)
