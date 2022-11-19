@@ -56,7 +56,7 @@ def get_json_data(game_id: int, dir='.') :
     game_url = os.path.join(URL_LIVESTATS, str(game_id), "data.json")
 
     if os.path.exists(file_json):
-        data_json = json.load(open(file_json))
+        game_json = json.load(open(file_json))
         # print(f"Game data loaded from local file: {game_file}")
     else:   # get if from URL
         # store the response of URL
@@ -64,12 +64,24 @@ def get_json_data(game_id: int, dir='.') :
 
         # storing the JSON response
         # from url in data
-        data_json = json.loads(response.read())
+        game_json = json.loads(response.read())
+
+        # assume no json file if game is not yet over!
+        if not game_ended(game_json):
+            raise ValueError('Game has not finished yet')
+
         with open(file_json, 'w') as f:
-            json.dump(data_json, f)
+            json.dump(game_json, f)
         # print(f"Game data loaded from URL: {game_url}")
 
-    return data_json
+    return game_json
+
+def game_ended(game_json) -> bool:
+    """
+    Checks if the game has ended
+    """
+    return game_json['pbp'] and game_json['pbp'][0]['actionType'] == "game"
+
 
 
 def get_game_info(game_id : int) -> dict:
