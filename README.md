@@ -20,8 +20,7 @@ These Pandas Dataframes can then be saved in various formats, including CSV and 
 - [Pynbl: Python AUS Bball Statistic System](#pynbl-python-aus-bball-statistic-system)
   - [1. Pre-requisites](#1-pre-requisites)
   - [2. How to use the system](#2-how-to-use-the-system)
-    - [Main functions](#main-functions)
-  - [3. Development info](#3-development-info)
+  - [3. Development information](#3-development-information)
     - [Game number id](#game-number-id)
     - [Main game data](#main-game-data)
     - [Date and venue information](#date-and-venue-information)
@@ -51,35 +50,25 @@ Data is fetched from the [Genius Sports](https://news.geniussports.com/australia
 
 Open Jupyter notebook [bball_stats.ipynb](bball_stats.ipynb), via the browser (with a proper Juypter server running) or via an IDE like [VS Code](https://code.visualstudio.com/docs/datascience/jupyter-notebooks).
 
-The data tables computed are the following Pandas dataframes:
+The notebook is self explanatory and the process is broken in steps.
 
-- `stats_df`: all stint lineup statistics per team in games.
-- `games_df`: basic information about each games.
-- `pbp_df`: all play-by-play data.
+The only section to set-up/change is **Section 1 (Configuration)** with the following information:
 
-The steps are as follows:
+* `games`: list of games to scrape, each game as a tuple `(game id, round number)`. Use [`extract_games`](extract_games.ipynb) notebook to extract those tuples from the NBL website.
+* `DATA_DIR`: the folder where to save the output files (e.g., CSV files).
+* `reload`: true if we want to re-load any games saved already from scratch.
 
-1. **Define variables** initial variables for the run:
-   * `games`: a list of game tuples/ids representing the games to scrape and process. Each tuple should be of the form `(game_id, game1, round1, game2, round2)`. If only the `game_id` is given, all the other data will set to `np.NaN` ("missing").
-   * `file_stats_df` and `games_stats_df` to point to the Pickle files storing the initial stat and ame tables that have already been computed (for previous games so far).
-2. **Define the new games** to be scraped and computed, together with the files where existing previous data (stats and games) has been saved.
-   * Each game needs a game-id, and the game numbers for each team.
-3. **Run the system** to compute new stats and games and append them with the existing saved ones (if any).
-4. **Save updated stats and games** to file (for later incremental extension).
+After configuration, then notebook will scrape each game information (by downloading corresponding JSON files), compute the statistics, and finally save to file various tables (e.g., games, players, statistics). 
 
-To incrementally extend the existing database/tables as new games are played, the system starts by loading pre-saved tables (from files `file_stats_df` and `games_stats_df`), and then goes to scrape all new games defined in list `games`, one by one, and calculate the stint stats and game info.
+The system will scrape all games available, stopping automatically in a round that is still incomplete (i.e., not all games available).
 
-At the end, the new tables `stats_df` and `games_df`  are the initial (loaded) tables plus the new stats and games data form the new games. These new tables can finally be materialized (i.e., saved) to file. This will avoid re-computing the stats for all the old games, next time the system is run.
+The saved tables can later be loaded so as to be further extended as new games are made available. This avoids re-computing past game stats.
 
-### Main functions
+## 3. Development information
 
-* `bball_stats.build_game_stints_stats_df(game_id)`
-* `tools.get_game_info(game_id)`
-* `bball_stats.pbp_get_ranges_mask(pbp_df: pd.DataFrame, time_intervals: list) -> pd.Series`
-* `bball_stats.get_starters(game_json, tm: int) -> set`
-* `bball_stats.get_pbp_df(data_json)`
+The process encoded in the Jupyter notebook together with the functions in file [`bballs_stats.py`](bballs_stats.py) should be enough to understand the main functions implemented and the data computed, most of them as Pandas DataFrames.
 
-## 3. Development info
+We discuss below additional information that is useful to understand the system and may not be directly understandable from the source code.
 
 ### Game number id
 
@@ -165,6 +154,7 @@ To compute the main tables, the system also extracts/computes, via various funct
 - The **starting lineup** of a team.
 - A **table of stints** for each team containing the lineup of players of each stint, the intervals and the number of minutes the stint was on court.
 - A **play-by-play** DataFrame, with and without the stint id on each play for each team (denoting which lineups where on court at a play).
+
 
 ## Links & Resources
 
