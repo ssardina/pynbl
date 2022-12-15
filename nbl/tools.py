@@ -5,7 +5,7 @@ import json  # https://docs.python.org/3/library/json.html
 import pandas as pd
 from functools import reduce
 
-from config import *
+from nbl.config import *
 
 percent = lambda part, whole: round(100* (part / whole), 2)
 

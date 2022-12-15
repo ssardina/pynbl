@@ -248,7 +248,7 @@ if __name__=="__main__":
 
 
     #################################
-    # All games have been processed, now put all dfs together
+    # All games have been processed, now put all data-frames together
     #################################
     if len(games_data) == 0:
         raise SystemExit("No games!")
@@ -275,7 +275,6 @@ if __name__=="__main__":
     print(f"Number of PENDING/FAILED games {len(GAMES) - games_df.shape[0]}")
 
     print(games_scrapped_df)
-    exit()
 
     # make a backup of existing tables on files
     for pkl_file in FILES.values():

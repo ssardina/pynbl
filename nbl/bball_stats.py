@@ -20,7 +20,7 @@ import datetime
 
 # Load constants
 from nbl.config import *
-import tools
+from nbl import tools
 
 from functools import reduce
 
