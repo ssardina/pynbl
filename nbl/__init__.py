@@ -6,5 +6,8 @@ __all__ = [
         'tools'
         ]
 
+from . import config
+from . import nbl
+
 # import nbl.bball_stats
 # import nbl.tools
