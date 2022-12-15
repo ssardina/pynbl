@@ -121,4 +121,5 @@ data-21_22
 nbl-gdrive
 data-20_21
 .vscode/settings.json
-test/
+test*
+games_*.py
