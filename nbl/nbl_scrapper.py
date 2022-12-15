@@ -78,9 +78,6 @@ def get_save_files(dir):
 
     return FILES
 
-# Set to True to re-compute from scratch all tables
-RELOAD = False
-
 if __name__=="__main__":
     parser = argparse.ArgumentParser(
         description=
@@ -88,7 +85,7 @@ if __name__=="__main__":
         'Examples:\n\n'
         '\t python -m nbl.nbl_scrapper\n'
         '\t python -m nbl.nbl_scrapper --games games_22_23\n'
-        '\t python -m nbl.nbl_scrapper --games games_22_23 --data-dir test\n',
+        '\t python -m nbl.nbl_scrapper --games games_22_23 --data-dir test --save\n',
         formatter_class=argparse.RawTextHelpFormatter
         # formatter_class = argparse.ArgumentDefaultsHelpFormatter
     )
@@ -104,6 +101,19 @@ if __name__=="__main__":
         default='games.py',
         help='File containing the games to scrape (defines list variable GAMES) (default: %(default)s).'
     )
+    parser.add_argument(
+        '--reload',
+        action='store_true',
+        default=False,
+        help='Reload all games from scratch; do not use store files (default: %(default)s).'
+    )
+    parser.add_argument(
+        '--save',
+        action='store_true',
+        default=False,
+        help='Append games scraped to current set of games (default: %(default)s).'
+    )
+
 
     args = parser.parse_args()
     log.debug(args)
@@ -133,7 +143,7 @@ if __name__=="__main__":
     print(f"Number of games to scrape ({len(GAMES)}) - Rounds {first_round} to {last_round}")
     log.debug(f"Games to scrape ({len(GAMES)}): {GAMES}")
     print(f"Folder to be used: {data_dir}")
-    print(f"Reload games? {RELOAD}")
+    print(f"Reload games? {args.reload}")
 
     # We start by loading all saved previous games, if any, as we want to append to that database (and we don't want to recompute them).
     saved_stint_stats_df = None
@@ -144,7 +154,7 @@ if __name__=="__main__":
 
     FILES = get_save_files(data_dir)
 
-    if not RELOAD:
+    if not args.reload:
         # load the stat dataframe already stored as a file
         log.debug(f"Loading recorded dataframes from files")
         try:
@@ -251,7 +261,7 @@ if __name__=="__main__":
     # All games have been processed, now put all data-frames together
     #################################
     if len(games_data) == 0:
-        raise SystemExit("No games!")
+        raise SystemExit("No new games scrapped! Finishing...")
 
     # First, build a dataframe with all the game data collected
     games_scrapped_df = pd.DataFrame(games_data)    # games that have been scrapped from web
@@ -270,41 +280,46 @@ if __name__=="__main__":
     stints_df = pd.concat(stints_dfs + ([saved_stints_df] if saved_stints_df is not None else []))
     stints_df.reset_index(inplace=True, drop=True)
 
-    print(f"\nNumber of total games collected: {games_df.shape[0]}")
-    print(f"Number of NEW collected: {games_df.shape[0] - len(existing_games)}")
-    print(f"Number of PENDING/FAILED games {len(GAMES) - games_df.shape[0]}")
+    msg = f"""
+    Number of total games collected: {games_df.shape[0]}
+    Number of NEW collected: {games_df.shape[0] - len(existing_games)}
+    Number of PENDING/FAILED games {len(GAMES) - games_df.shape[0]}
+    {games_scrapped_df}
+    """
+    print(msg)
+    log.info(msg)
 
-    print(games_scrapped_df)
+    if args.save:
+        # make a backup of existing tables on files
+        for pkl_file in FILES.values():
+            for ext in ['.csv', '.xlsx', '.pkl']:
+                file = Path(pkl_file).with_suffix(ext)
+                if os.path.exists(file):
+                    # print("Backup file", file)
+                    shutil.copy(file, str(file) + ".bak")
 
-    # make a backup of existing tables on files
-    for pkl_file in FILES.values():
-        for ext in ['.csv', '.xlsx', '.pkl']:
-            file = Path(pkl_file).with_suffix(ext)
-            if os.path.exists(file):
-                # print("Backup file", file)
-                shutil.copy(file, str(file) + ".bak")
+        # dump stint stats dataframe
+        stint_stats_df.to_pickle(Path(data_dir, "stint_stats_df").with_suffix(".pkl"))
+        stint_stats_df.to_csv(Path(data_dir, "stint_stats_df").with_suffix(".csv"), index=False)
+        stint_stats_df.to_excel(Path(data_dir, "stint_stats_df").with_suffix(".xlsx"), index=False)
 
-    # dump stint stats dataframe
-    stint_stats_df.to_pickle(Path(data_dir, "stint_stats_df").with_suffix(".pkl"))
-    stint_stats_df.to_csv(Path(data_dir, "stint_stats_df").with_suffix(".csv"), index=False)
-    stint_stats_df.to_excel(Path(data_dir, "stint_stats_df").with_suffix(".xlsx"), index=False)
+        # dump stint stats dataframe
+        stints_df.to_pickle(Path(data_dir, "stints_df").with_suffix(".pkl"))
+        stints_df.to_csv(Path(data_dir, "stints_df").with_suffix(".csv"), index=False)
+        stints_df.to_excel(Path(data_dir, "stints_df").with_suffix(".xlsx"), index=False)
 
-    # dump stint stats dataframe
-    stints_df.to_pickle(Path(data_dir, "stints_df").with_suffix(".pkl"))
-    stints_df.to_csv(Path(data_dir, "stints_df").with_suffix(".csv"), index=False)
-    stints_df.to_excel(Path(data_dir, "stints_df").with_suffix(".xlsx"), index=False)
+        # dump game dataframe
+        games_df.to_pickle(Path(data_dir, "games_df").with_suffix(".pkl"))
+        games_df.to_csv(Path(data_dir, "games_df").with_suffix(".csv"), index=False)
+        games_df.to_excel(Path(data_dir, "games_df").with_suffix(".xlsx"), index=False)
 
-    # dump game dataframe
-    games_df.to_pickle(Path(data_dir, "games_df").with_suffix(".pkl"))
-    games_df.to_csv(Path(data_dir, "games_df").with_suffix(".csv"), index=False)
-    games_df.to_excel(Path(data_dir, "games_df").with_suffix(".xlsx"), index=False)
+        # dump players dataframe
+        players_df.to_pickle(Path(data_dir, "players_df").with_suffix(".pkl"))
+        players_df.to_csv(Path(data_dir, "players_df").with_suffix(".csv"), index=False)
+        players_df.to_excel(Path(data_dir, "players_df").with_suffix(".xlsx"), index=False)
 
-    # dump players dataframe
-    players_df.to_pickle(Path(data_dir, "players_df").with_suffix(".pkl"))
-    players_df.to_csv(Path(data_dir, "players_df").with_suffix(".csv"), index=False)
-    players_df.to_excel(Path(data_dir, "players_df").with_suffix(".xlsx"), index=False)
+        now = datetime.datetime.now() # current date and time
+        date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
 
-    now = datetime.datetime.now() # current date and time
-    date_time = now.strftime("%m/%d/%Y, %H:%M:%S")
-
-    print(f"Finished saving in {data_dir} @ {date_time}")
+        print(f"Saved tables in folder {data_dir} @ {date_time}")
+        log.info(f"Saved tables in folder {data_dir} @ {date_time}")
