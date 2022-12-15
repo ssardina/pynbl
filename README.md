@@ -19,22 +19,23 @@ These Pandas Dataframes can then be saved in various formats, including CSV and 
 
 - [Pynbl: Python AUS Bball Statistic System](#pynbl-python-aus-bball-statistic-system)
   - [1. Pre-requisites](#1-pre-requisites)
-  - [2. How to use the system](#2-how-to-use-the-system)
-  - [3. Development information](#3-development-information)
+  - [2. How to use the notebook system](#2-how-to-use-the-notebook-system)
+  - [3. How to use the standalone script](#3-how-to-use-the-standalone-script)
+  - [4. Development information](#4-development-information)
     - [Game number id](#game-number-id)
     - [Main game data](#main-game-data)
     - [Date and venue information](#date-and-venue-information)
     - [Date and time formats](#date-and-time-formats)
     - [Auxiliary data computed/extracted](#auxiliary-data-computedextracted)
-  - [Links & Resources](#links--resources)
+  - [Links \& Resources](#links--resources)
     - [API Services](#api-services)
     - [Other similar basketball stat systems/pages](#other-similar-basketball-stat-systemspages)
     - [Data visualization](#data-visualization)
-  - [Contact & Contributions](#contact--contributions)
+  - [Contact \& Contributions](#contact--contributions)
 
 ## 1. Pre-requisites
 
-The system runs in Python 3.8+ as a Jupyter notebook.
+The system runs in Python 3.8+ as a Jupyter notebook or a standalone Python script.
 
 Assuming Python is installed, install the required modules by running:
 
@@ -44,9 +45,9 @@ $ pip install -r requirements.txt
 
 The system has been developed with [VS Code](https://code.visualstudio.com/docs/datascience/jupyter-notebooks) and its [Jupyter extension](https://pypi.org/project/jupyter/).
 
-Data is fetched from the [Genius Sports](https://news.geniussports.com/australian-national-basketball-league-extends-data-technology-partnership-with-genius-sports-group/) clould service via their link `https://livestats.dcd.shared.geniussports.com/data`. Some relevant documentation can be found [here](https://support.geniussports.com/en/support/solutions/articles/9000008009-api-feed-overview-and-documentation),although it does not seem to be exactly that REST API.
+Data is fetched from the [Genius Sports](https://news.geniussports.com/australian-national-basketball-league-extends-data-technology-partnership-with-genius-sports-group/) cloud service via their link `https://livestats.dcd.shared.geniussports.com/data`. Some relevant documentation can be found [here](https://support.geniussports.com/en/support/solutions/articles/9000008009-api-feed-overview-and-documentation),although it does not seem to be exactly that REST API.
 
-## 2. How to use the system
+## 2. How to use the notebook system
 
 Open Jupyter notebook [bball_stats.ipynb](bball_stats.ipynb), via the browser (with a proper Juypter server running) or via an IDE like [VS Code](https://code.visualstudio.com/docs/datascience/jupyter-notebooks).
 
@@ -64,7 +65,18 @@ The system will scrape all games available, stopping automatically in a round th
 
 The saved tables can later be loaded so as to be further extended as new games are made available. This avoids re-computing past game stats.
 
-## 3. Development information
+
+## 3. How to use the standalone script
+
+The system is also provided as a package module [nbl.nbl_scrapper](nbl/nbl_scrapper.py). To run it:
+
+```shell
+$ python -m nbl.nbl_scrapper --games games_22_23 --data data2223
+```
+
+Here `games_22_23.py` is the file defining the variable `GAMES` with the list of games to scrape, and `data2223` is the folder used to read JSON files and store output tables.
+
+## 4. Development information
 
 The process encoded in the Jupyter notebook together with the functions in file [`bballs_stats.py`](bballs_stats.py) should be enough to understand the main functions implemented and the data computed, most of them as Pandas DataFrames.
 
