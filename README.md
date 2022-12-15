@@ -1,24 +1,27 @@
 # Pynbl: Python AUS Bball Statistic System
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/ssardina/pynbl/HEAD)
-
-The scripts and notebooks in this repo allows to extract information and statistics from Basketball game data provided by [fibalivestats](http://www.fibaorganizer.com/) for the [NBL Australian Basketball](https://nbl.com.au/) competition. It is similar in functionality and is inspired in R-based system [euRobasketAu](https://github.com/jgalowe/euRobasketAu?organization=jgalowe&organization=jgalowe).
+This repo contains scripts and notebooks to extract information and statistics for the [NBL Australian Basketball](https://nbl.com.au/) competition using the Basketball game data provided by [fibalivestats](http://www.fibaorganizer.com/). It is inspired and similar in functionalities to [euRobasketAu](https://github.com/jgalowe/euRobasketAu?organization=jgalowe&organization=jgalowe) R-based system.
 
 Game data (e.g., play-by-play information) is fetch (or provided offline) as a [JSON](https://www.w3schools.com/js/js_json_datatypes.asp) type structure via a game-id number (e.g., `1976446`).
 
-The structure is processed to build various [Panda](https://pandas.pydata.org/) Dataframes (i.e., tables), which can then be saved as CSV or Excel files, or as [Pickle](https://docs.python.org/3/library/pickle.html) format for re-loading later on.
+The structure is processed to build various [Panda](https://pandas.pydata.org/) DataFrames (i.e., tables), which can then be saved as CSV, Excel, or [Pickle](https://docs.python.org/3/library/pickle.html) formats.
 
-The **main system** is a Jupyter Notebook [bball_stats.ipynb](bball_stats.ipynb), which can be used to _incrementally_ construct (i.e., extend previous results) statistical tables as games are played along the season.
+The system is provided in two ways:
 
-Currently, the system focuses on building _stint lineup_ statistics (but will be extended further to calculate other stats, like with/without or on/off). To do so, the system builds the following **main tables**:
+* A Jupyter Notebook [bball_stats.ipynb](bball_stats.ipynb), which can be used to _incrementally_ construct (i.e., extend previous results) statistical tables as games are played along the season.
+* A script [nbl.nbl_scrapper](nbl/nbl_scrapper.py), which can be used a stand-alone script to scrape, build stats, and save tables.
 
-- a Pandas table with _**games' information**_ (e.g., team names, scores, date, venue, etc.).
-- a Pandas table with stats for each _**teams' stint lineup**_ (e.g., lineup of players who played together in different intervals during the game).
+Currently, the system focuses on building **_stint lineup_ statistics**, but the idea is to extended it further to calculate other stats, like with/without or on/off. To do so, the system builds the following tables:
+
+1. **Games table**: contains data about games played (e.g., team names, scores, date, venue, etc.).
+2. **Players table**: contains statistics on each player across games played.
+3. **Stints table**: contains the stint lineups of each game for both teams (e.g., which players in each stint and the intervals played together).
+4. **Stints stats table**: contains statistics per stints in games.
 
 These Pandas Dataframes can then be saved in various formats, including CSV and Excel.
 
 - [Pynbl: Python AUS Bball Statistic System](#pynbl-python-aus-bball-statistic-system)
-  - [1. Pre-requisites](#1-pre-requisites)
+  - [1. Pre-requisites \& setup](#1-pre-requisites--setup)
   - [2. How to use the notebook system](#2-how-to-use-the-notebook-system)
   - [3. How to use the standalone script](#3-how-to-use-the-standalone-script)
   - [4. Development information](#4-development-information)
@@ -33,7 +36,7 @@ These Pandas Dataframes can then be saved in various formats, including CSV and 
     - [Data visualization](#data-visualization)
   - [Contact \& Contributions](#contact--contributions)
 
-## 1. Pre-requisites
+## 1. Pre-requisites & setup
 
 The system runs in Python 3.8+ as a Jupyter notebook or a standalone Python script.
 
@@ -47,6 +50,11 @@ The system has been developed with [VS Code](https://code.visualstudio.com/docs/
 
 Data is fetched from the [Genius Sports](https://news.geniussports.com/australian-national-basketball-league-extends-data-technology-partnership-with-genius-sports-group/) cloud service via their link `https://livestats.dcd.shared.geniussports.com/data`. Some relevant documentation can be found [here](https://support.geniussports.com/en/support/solutions/articles/9000008009-api-feed-overview-and-documentation),although it does not seem to be exactly that REST API.
 
+The system will require:
+
+1. setting the list `GAMES` with elements of the form `(game id, round number)`. Use [`extract_games`](extract_games.ipynb) notebook to extract those tuples from the NBL website. Define that variable in a separate file that will be imported into the system. Check examples `games_XX_YY.py` for various seasons.
+2. a folder where files will be stored and read from. In particular, JSON files for each game scrapped will be saved in that folder as well as all the computed tables in various formats (i.e., CSV, Excel, Pickle).
+
 ## 2. How to use the notebook system
 
 Open Jupyter notebook [bball_stats.ipynb](bball_stats.ipynb), via the browser (with a proper Juypter server running) or via an IDE like [VS Code](https://code.visualstudio.com/docs/datascience/jupyter-notebooks).
@@ -55,16 +63,15 @@ The notebook is self explanatory and the process is broken in steps.
 
 The only section to set-up/change is **Section 1 (Configuration)** with the following information:
 
-* `games`: list of games to scrape, each game as a tuple `(game id, round number)`. Use [`extract_games`](extract_games.ipynb) notebook to extract those tuples from the NBL website.
+* `games`: list of games to scrape, by importing the corresponding game file defining variable `GAMES`.
 * `DATA_DIR`: the folder where to save the output files (e.g., CSV files).
 * `reload`: true if we want to re-load any games saved already from scratch.
 
-After configuration, then notebook will scrape each game information (by downloading corresponding JSON files), compute the statistics, and finally save to file various tables (e.g., games, players, statistics). 
+After configuration, then notebook will scrape each game information (by downloading corresponding JSON files), compute the statistics, and finally save to file various tables (e.g., games, players, statistics).
 
 The system will scrape all games available, stopping automatically in a round that is still incomplete (i.e., not all games available).
 
 The saved tables can later be loaded so as to be further extended as new games are made available. This avoids re-computing past game stats.
-
 
 ## 3. How to use the standalone script
 
@@ -78,7 +85,7 @@ Here `games_22_23.py` is the file defining the variable `GAMES` with the list of
 
 ## 4. Development information
 
-The process encoded in the Jupyter notebook together with the functions in file [`bballs_stats.py`](bballs_stats.py) should be enough to understand the main functions implemented and the data computed, most of them as Pandas DataFrames.
+The process encoded in the Jupyter notebook and the modules under package `nbl` should be enough to understand the main functions implemented and the data computed, most of them as Pandas DataFrames. Script [`nbl.nbl_scrapper.py`](nbl/nbl_scrapper.py) basically implements the notebook offline.
 
 We discuss below additional information that is useful to understand the system and may not be directly understandable from the source code.
 
@@ -166,7 +173,6 @@ To compute the main tables, the system also extracts/computes, via various funct
 - The **starting lineup** of a team.
 - A **table of stints** for each team containing the lineup of players of each stint, the intervals and the number of minutes the stint was on court.
 - A **play-by-play** DataFrame, with and without the stint id on each play for each team (denoting which lineups where on court at a play).
-
 
 ## Links & Resources
 
