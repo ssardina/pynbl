@@ -46,6 +46,15 @@ Assuming Python is installed, install the required modules by running:
 $ pip install -r requirements.txt
 ```
 
+We also need the Firefox [Geckodriver](https://github.com/mozilla/geckodriver) to scrape web-pages (for extracting dates and venues of games):
+
+```shell
+$ sudo apt-get install firefox-geckodriver
+```
+
+This assumes you have the [Mozilla Team PPA](https://launchpad.net/~mozillateam/+archive/ubuntu/ppa) in your apt sources: `sudo add-apt-repository ppa:mozillateam/ppa`
+
+
 The system has been developed with [VS Code](https://code.visualstudio.com/docs/datascience/jupyter-notebooks) and its [Jupyter extension](https://pypi.org/project/jupyter/).
 
 Data is fetched from the [Genius Sports](https://news.geniussports.com/australian-national-basketball-league-extends-data-technology-partnership-with-genius-sports-group/) cloud service via their link `https://livestats.dcd.shared.geniussports.com/data`. Some relevant documentation can be found [here](https://support.geniussports.com/en/support/solutions/articles/9000008009-api-feed-overview-and-documentation),although it does not seem to be exactly that REST API.
@@ -78,10 +87,10 @@ The saved tables can later be loaded so as to be further extended as new games a
 The system is also provided as a package module [nbl.nbl_scrapper](nbl/nbl_scrapper.py). To run it:
 
 ```shell
-$ python -m nbl.nbl_scrapper --games games_22_23 --data data2223
+$ python -m nbl.nbl_scrapper --games games_22_23 --data data2223 --save
 ```
 
-Here `games_22_23.py` is the file defining the variable `GAMES` with the list of games to scrape, and `data2223` is the folder used to read JSON files and store output tables.
+Here `games_22_23.py` is the file defining the variable `GAMES` with the list of games to scrape, and `data2223` is the folder used to read JSON files and store output tables. The option `--save` tells the script to update the new file tables.
 
 ## 4. Development information
 
@@ -149,7 +158,7 @@ The API clould service is provided by [Genius Sports ](https://developer.geniuss
 
 ### Date and venue information
 
-The _date_ and _venue_ of a game is not part of the JSON data, so it is scraped from HTML pages (via [request](https://requests.readthedocs.io/en/latest/) and [BeautifulSoup](https://www.crummy.com/software/BeautifulSoup/bs4/doc/) Python packages) using links of this form:
+The _date_ and _venue_ of a game is not part of the JSON data, so it is scraped from HTML pages (via [request](https://requests.readthedocs.io/en/latest/) and [BeautifulSoup](https://www.crummy.com/software/BeautifulSoup/bs4/doc/) Python packages, at the Firefox [geckodriver](https://github.com/mozilla/geckodriver)) using links of this form:
 
 https://fibalivestats.dcd.shared.geniussports.com/u/NBL/1976446/
 
