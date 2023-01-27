@@ -183,13 +183,21 @@ if __name__=="__main__":
     stints_dfs = []
     players_dfs = []
     games_data = []
+    current_round = -1
+    active_round = True    # current round has a game played
 
     # Go through every game and build data for each (if played); we'll put them together after.
     # stop in a round where there are missing games
     for game in GAMES:
-        # game is beyond the last round to scrape, stop processing..
-        if game[1] > last_round:
-            break
+        # new round was found!
+        if game[1] != current_round:
+            if not active_round:    # was there a game in prevous round?
+                log.info(f"No game found in round {current_round}. Stop scrapping games....")
+                break
+            else:
+                current_round = game[1]
+                log.info(f"Starting new round: {current_round}")
+                active_round = False
 
         # get game_id and round no (if available)
         if isinstance(game, tuple):
@@ -200,6 +208,7 @@ if __name__=="__main__":
 
         # don't scrape game data if already loaded from file, skip it
         if game_id in existing_games:
+            active_round = True
             log.debug(f"Game {game_id} was already saved on file; no scrapping...")
             continue
 
@@ -211,8 +220,8 @@ if __name__=="__main__":
         # 1. Read game JSON file
         try:
             game_json = tools.get_json_data(game_id, dir=data_dir)
+            active_round = True
         except (HTTPError, ValueError) as e:
-            last_round = round_no    # this is the last round to be processed!
             log.debug(f"Game {game_id} JSON data not available yet for round: {round_no}: ", type(e), e)
             print(f"Game {game_id} for round {round_no} not available yet!")
             continue
