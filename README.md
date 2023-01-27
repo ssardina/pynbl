@@ -87,10 +87,10 @@ The saved tables can later be loaded so as to be further extended as new games a
 The system is also provided as a package module [nbl.nbl_scrapper](nbl/nbl_scrapper.py). To run it:
 
 ```shell
-$ python -m nbl.nbl_scrapper --games games_22_23 --data data2223 --save
+$ python -m nbl.nbl_scrapper --games games_22_23 --data data-22_23/ --save
 ```
 
-Here `games_22_23.py` is the file defining the variable `GAMES` with the list of games to scrape, and `data2223` is the folder used to read JSON files and store output tables. The option `--save` tells the script to update the new file tables.
+Here `games_22_23.py` is the file defining the variable `GAMES` with the list of games to scrape, and `data-22_23/` is the folder used to read JSON files and store output tables. The option `--save` tells the script to update the new file tables.
 
 ## 4. Development information
 
