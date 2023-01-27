@@ -14,8 +14,21 @@ log_file="backup-ssardina-${now}.log"
 
 cd "$DIR_SCRIPT"
 google-drive-ocamlfuse gdrive
-python -m nbl.nbl_scrapper --games games_22_23 --data gdrive
-fusermount -u gdrive
+python -m nbl.nbl_scrapper --games games_22_23 --data gdrive $@
+sleep 25
+
+x=1
+while [ $x -gt 0 ];
+do
+    sleep 10
+    echo "Unmounting gdrive..."
+    fusermount -u gdrive
+    x=$?
+    echo "Exit $x"
+done
+
+
+
 
 
 
