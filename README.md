@@ -30,6 +30,7 @@ These Pandas Dataframes can then be saved in various formats, including CSV and 
     - [Date and venue information](#date-and-venue-information)
     - [Date and time formats](#date-and-time-formats)
     - [Auxiliary data computed/extracted](#auxiliary-data-computedextracted)
+    - [Unfished games](#unfished-games)
   - [Links \& Resources](#links--resources)
     - [API Services](#api-services)
     - [Other similar basketball stat systems/pages](#other-similar-basketball-stat-systemspages)
@@ -182,6 +183,48 @@ To compute the main tables, the system also extracts/computes, via various funct
 - The **starting lineup** of a team.
 - A **table of stints** for each team containing the lineup of players of each stint, the intervals and the number of minutes the stint was on court.
 - A **play-by-play** DataFrame, with and without the stint id on each play for each team (denoting which lineups where on court at a play).
+
+### Unfished games
+
+Once in 2022-2023 league there was a game that has indeed finished but the play-by-play JSON files does not contain the last `game` event. Hence, when scrapping the JSON data file, the script believes the game is still being played. This is the final play-by-play recorded in the JSON file:
+
+```json
+    "pbp": [
+        {
+            "gt": "00:02",
+            "clock": "00:02:40",
+            "s1": 87,
+            "s2": 84,
+            "lead": 3,
+            "tno": 1,
+            "period": 4,
+            "periodType": "REGULAR",
+            "pno": 0,
+            "player": "",
+            "success": 1,
+            "actionType": "rebound",
+            "actionNumber": 835,
+            "previousAction": 834,
+            "qualifier": [
+                "team"
+            ],
+            "subType": "defensive",
+            "scoring": 0,
+            "shirtNumber": ""
+        },
+        {
+```
+
+This is game `2224808` for the 2022-2023 season.
+
+It is not clear what the best way to handle these buggy cases would be. For now, one can comment out the code recognising the end of the game (which looks for event "`game`"):
+
+```python
+        # assume no json file if game is not yet over!
+        if not game_ended(game_json):
+            raise ValueError('Game has not finished yet')
+```
+
 
 ## Links & Resources
 
