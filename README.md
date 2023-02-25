@@ -24,6 +24,7 @@ These Pandas Dataframes can then be saved in various formats, including CSV and 
   - [1. Pre-requisites \& setup](#1-pre-requisites--setup)
   - [2. How to use the notebook system](#2-how-to-use-the-notebook-system)
   - [3. How to use the standalone script](#3-how-to-use-the-standalone-script)
+    - [Setting it as a cron job](#setting-it-as-a-cron-job)
   - [4. Development information](#4-development-information)
     - [Game number id](#game-number-id)
     - [Main game data](#main-game-data)
@@ -92,6 +93,15 @@ $ python -m nbl.nbl_scrapper --games games_22_23 --data data-22_23/ --save
 ```
 
 Here `games_22_23.py` is the file defining the variable `GAMES` with the list of games to scrape, and `data-22_23/` is the folder used to read JSON files and store output tables. The option `--save` tells the script to update the new file tables.
+
+### Setting it as a cron job
+
+The script `run-scrape.sh` runs an update of the NBL stats and saves the corresponding files in a Google Drive folder. To do so it first mounts a Google Drive folder using [google-drive-ocamlfuse](https://github.com/astrada/google-drive-ocamlfuse/). To automate its running twice a week:
+
+```cron
+01 00 * * 7 /home/ssardina/ssardina-teaching/tools/pynbl.git/run-scrape.sh --save
+01 00 * * 2 /home/ssardina/ssardina-teaching/tools/pynbl.git/run-scrape.sh --save
+```
 
 ## 4. Development information
 
