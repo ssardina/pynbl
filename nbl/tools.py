@@ -80,8 +80,20 @@ def game_ended(game_json) -> bool:
     """
     Checks if the game has ended
     """
-    return game_json['pbp'] and game_json['pbp'][0]['actionType'] == "game"
+    if game_json['pbp'] is None or not game_json['pbp']:
+        return False
 
+    # standard NBL season 2022-2023
+    if game_json['pbp'][0]['actionType'] == "game":
+        return True
+
+    # new (March 2023) games like https://fibalivestats.dcd.shared.geniussports.com/data/139002/data.json
+    # check last 5 PBPs
+    for i in range(5):
+        if game_json['pbp'][i]['actionType'] == "game" and game_json['pbp'][i]['subType'] == "end":
+            return True
+
+    return False
 
 
 def get_game_info(game_id : int) -> dict:
