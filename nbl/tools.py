@@ -53,7 +53,7 @@ def get_json_data(game_id: int, dir='.') :
         json-object: An object with JSON structure dict/list
     """
     file_json = os.path.join(dir, f"data-{game_id}.json")
-    game_url = os.path.join(URL_LIVESTATS, str(game_id), "data.json")
+    game_url = f"{URL_LIVESTATS}/{str(game_id)}/data.json"
 
     if os.path.exists(file_json):
         game_json = json.load(open(file_json))
